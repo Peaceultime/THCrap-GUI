@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Touhou Community Reliant Automatic Patcher</title>
+		<link rel="stylesheet" type="text/css" href="style-base.css">
+		<script type="text/javascript" src="common.js"></script>
+		<script type="text/javascript" src="configure.js"></script>
+	</head>
+	<body>
+		<div class="menu">
+			<div class="app-title">
+				Touhou Community Reliant Automatic Patcher
+			</div>
+			<div class="drag-zone flex flex-horizontal-reversed">
+				<span class="close-window drag-zone-action">
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"/></svg>
+				</span>
+				<span class="maximaze-window drag-zone-action">
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+				</span>
+				<span class="minimize-window drag-zone-action">
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+				</span>
+				<span class="settings drag-zone-action" onclick="remote.getCurrentWebContents().toggleDevTools()">
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>
+				</span>
+			</div>
+			<div class="menu-action">
+				<ul>
+					<li trid="action-preferences" onclick="showPreferences();">Preferences</li>
+				</ul>
+			</div>
+		</div>
+		<div class="wrapper flex flex-vertical">
+			<div class="games-section">
+				<div class="section-title" trid="title-games">
+					Games
+				</div>
+				<div class="games-wrapper">
+					<div class="games-scroller">
+						<table class="games-table"> <!-- I hate tables T-T -->
+							<tbody>
+								<tr class="games-table-header">
+									<th class="game-header-number" trid="table-number">Number</th>
+									<th class="game-header-jp-title" trid="table-jp-title">Japanese title</th>
+									<th class="game-header-sub" trid="table-sub">English subtitle</th>
+									<th class="game-header-version" trid="table-version">Version</th>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="games-settings flex flex-horizontal">
+					<button class="game-server-button button" trid="gsettings-servers" onclick="setRepo(loadPatchesInfo);">Configure servers...</button>
+					<button class="game-search-button button" trid="gsettings-search" onclick="searchGames();">Search for games...</button>
+				</div>
+			</div>
+			<div class="flex flex-horizontal">
+				<div class="profile-section">
+					<div class="section-title" trid="title-profile">Patch profile configuration <span trid="subtitle-profile">(for selected game(s))</span></div>
+					<div class="flex flex-horizontal profile-wrapper">
+						<div class="flex flex-vertical border-margin">
+							<div class="flex flex-horizontal">
+								<div class="profile-subtab">
+									<div class="subtab-title" trid="profile-subtab-title">
+										Profile
+									</div>
+									<div class="profile-select"></div>
+								</div>
+								<div class="patch-selection-subtab">
+									<div class="subtab-title" trid="selection-subtab-title">
+										Patches included
+									</div>
+									<div class="patch-wrapper">
+										<div class="patch-header" trid="patch-header">Patchs</div>
+										<div class="patch-scroller">
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="buttons-subtab">
+								<button class="button new-profile-button" trid="new-profile-button" onclick="createProfile();">New profile ...</button>
+								<button class="button select-patch-button" trid="select-patch-button" onclick="selectPatch();">Select patch ...</button>
+								<button class="button remove-profile-button" trid="remove-profile-button" onclick="removeProfile();">Remove profile</button>
+								<button class="button save-profile-button" trid="save-profile-button" onclick="saveProfile();">Save profile</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="patch-section">
+					<div class="section-title" trid="title-patch">
+						Patch informations
+					</div>
+					<div class="patch-infos"></div>
+					<button class="button game-config-button" trid="game-config-button" onclick="config();">Configure game</button>
+					<button class="button launch-game-button" trid="launch-game-button" onclick="launch();">Launch game</button>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
