@@ -3,4 +3,4 @@ function closeWindow()
 	remote.getCurrentWindow().close();
 }
 
-window.addEventListener("load", update);
+//window.addEventListener("load", update);
