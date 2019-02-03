@@ -1,0 +1,148 @@
+:root
+{
+	--background-color: #4F4F4F;
+	--alt-color: #3B3B3B;
+	--dark-color: #2D2D2D;
+	--white-color: #DFDFDF;
+
+	--loader-height: 12px;
+}
+
+html, body, div, header
+{
+	padding: 0;
+	margin: 0;
+	display: block;
+	-webkit-app-region: no-drag;
+	-webkit-user-select: none;
+	color: var(--white-color);
+	font-family: "Segoe UI Light";
+	overflow: hidden;
+}
+header.app-header
+{
+	background-color: var(--dark-color);
+	-webkit-app-region: drag;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.app-title
+{
+	-webkit-app-region: drag;
+	font-size: 15px;
+	padding: 6px 12px;
+}
+.close-app
+{
+	padding: 8px 12px;
+	fill: var(--white-color);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+}
+.close-app:hover
+{
+	background-color: #942f2f;
+}
+.app-container
+{
+	background-color: var(--background-color);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.infos
+{
+	margin-bottom: var(--loader-height);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.app-logo
+{
+	margin: 32px;
+}
+.task-description
+{
+	margin-bottom: 32px;
+	font-size: 25px;
+}
+.loading
+{
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: var(--loader-height);
+}
+
+.loader
+{
+    height: 100%;
+    width: 0%;
+    background-color: var(--dark-color);
+}
+
+.loading.no-load .loader
+{
+	width: 100%;
+    background-color: transparent;
+}
+
+.loading.no-load .loader:before
+{
+	content: "";
+	display: block;
+	position: absolute;
+	height: 100%;
+	width: 10%;
+	left: -10%;
+	animation: load-loop 3s ease-in-out infinite;
+	background-color: var(--dark-color);
+}
+
+.loading.no-load .loader:after
+{
+	content: "";
+	display: block;
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	left: -100%;
+	animation: load-loop-2 3s 1.25s ease-in-out infinite;
+	background-color: var(--dark-color);
+}
+
+@keyframes load-loop
+{
+	from {
+		width: 10%;
+		left: -10%;
+	}
+	50% {
+		width: 100%;
+		left: 100%;
+	}
+	to {
+		width: 100%;
+		left: 100%;
+	}
+}
+
+@keyframes load-loop-2
+{
+	from {
+		width: 100%;
+		left: -100%;
+	}
+	50% {
+		width: 10%;
+		left: 110%;
+	}
+	to {
+		width: 10%;
+		left: 110%;
+	}
+}
