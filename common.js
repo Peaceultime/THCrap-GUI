@@ -13,6 +13,8 @@ const verbose = true;
 
 const updateServers = ["https://aspect-code.net/touhouproject/download/thcrap/"];
 
+var settings, translation;
+
 var utils = {};
 /**
  * Return the absolute path of the given path, even if it is already absolute
@@ -146,6 +148,9 @@ utils.get = function(url, headers)
 	let body = "";
 	return new Promise(function(res, rej) {
 		utils.request(url).then(function(then) {
+			if(verbose)
+				console.log("Start getting data");
+
 			then.resp.setEncoding("utf8");
 			then.resp.on("data", function(data) {
 				body += data;
@@ -184,8 +189,14 @@ utils.for = function(object, callback)
 
 	callback.bind(object);
 
+	if(verbose)
+		console.log("Iterating through ", object);
+
 	let loop = function()
 	{
+		if(verbose)
+			console.log("Iteration " + index);
+
 		if(index == keys.length)
 			return Promise.resolve();
 		return callback(values[index], keys[index], index).then(function() { index++; return loop(); });
@@ -225,15 +236,30 @@ utils.settings = class
 {
 	constructor()
 	{
-		try {
-			this._settings = JSON.parse(fs.readFileSync(path.join(__dirname, "settings.json")));
-			this._dirty = false;
-		} catch(e) {
-			this._settings = {
-
-			};
-			this._dirty = true;
-		}
+		return new Promise(function(res, rej) {
+			fs.readFile(path.join(__dirname, "settings.json"), function(e, data) {
+				if(e && e.code !== "ENOENT")
+					rej(e);
+				else if(e)
+				{
+					this._settings = {
+						"lang": "en"
+					};
+					this._dirty = true;
+					this.save().then(() => res(this));
+				}
+				else
+				{
+					try {
+						this._settings = JSON.parse(data);
+						this._dirty = false;
+						res(this);
+					} catch(e) {
+						rej(e);
+					}
+				}
+			}.bind(this));
+		}.bind(this));
 	}
 	get lang()
 	{
@@ -249,7 +275,7 @@ utils.settings = class
 		if(this._dirty)
 		{
 			return new Promise(function(res, rej) {
-				fs.saveFile(JSON.stringify(this._settings), function(e) {
+				fs.writeFile(path.join(__dirname, "settings.json"), JSON.stringify(this._settings), function(e) {
 					if(e)
 						rej(e);
 					else
@@ -257,8 +283,8 @@ utils.settings = class
 						this._dirty = false;
 						res();
 					}
-				});
-			});
+				}.bind(this));
+			}.bind(this));
 		}
 	}
 }
@@ -266,12 +292,48 @@ utils.translation = class
 {
 	constructor(lang)
 	{
-		this._lang = lang;
-
-		this._cachedTranslation = JSON.parse(fs.readFileSync(path.join(__dirname, this._lang, "lang.json")));
+		return this.changeLang(lang);
 	}
 	get lang()
 	{
 		return this._lang;
+	}
+	changeLang(lang)
+	{
+		this._lang = lang;
+
+		return new Promise(function(res, rej) {
+			fs.readFile(path.join(__dirname, "translation_files", this._lang, "lang.json"), function(e, data) {
+				if(e)
+					rej(e);
+				else
+				{
+					try {
+						this._cachedTranslation = JSON.parse(data);
+						res(this);
+					} catch(e) {
+						rej(e);
+					}
+				}
+			}.bind(this));
+		}.bind(this));
+	}
+	translation(id)
+	{
+		return typeof this._cachedTranslation[id] !== "string" ? (new Error("Can't find translate value for id" + id)) : this._cachedTranslation[id];
+	}
+	translate()
+	{
+		let translatable = document.querySelectorAll("[trid]");
+
+		if(verbose)
+			console.log("Translation started");
+
+		return translatable.for(function(itm, key, index) {
+			let translate = this.translation(itm.getAttribute("trid"));
+			if(translate instanceof Error)
+				return Promise.reject(translate);
+			itm.textContent = (typeof translate === "undefined" ? "unknown" : translate);
+		}.bind(this));
 	}
 }

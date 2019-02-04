@@ -16,8 +16,14 @@ function update()
 }
 
 window.addEventListener("DOMContentLoaded", function() {
-	settings = new utils.settings();
-	translation = new utils.translation(settings.lang);
-	translation.translate();
+	new utils.settings().then(function(set) {
+		settings = set;
+		new utils.translation(settings.lang).then(function(trsl) {
+			translation = trsl;
+			translation.translate().catch(function(e) {
+				console.error(e);
+			});
+		});
+	});
 });
 //window.addEventListener("load", update);
