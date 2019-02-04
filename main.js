@@ -1,3 +1,5 @@
+"use strict";
+
 const {app, BrowserWindow, remote} = require('electron');
 
 const path = require('path');

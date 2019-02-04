@@ -1,3 +1,5 @@
+"use strict";
+
 window.addEventListener("load", function() {
 	let tabs = document.querySelectorAll(".app-tabs .tab");
 	let tabContainers = document.querySelectorAll(".tab-container");

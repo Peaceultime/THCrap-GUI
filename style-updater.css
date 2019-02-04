@@ -111,7 +111,7 @@ header.app-header
 	height: 100%;
 	width: 100%;
 	left: -100%;
-	animation: load-loop-2 3s 1.2s ease-in-out infinite;
+	animation: load-loop-2 3s 1.1s ease-in-out infinite;
 	background-color: var(--dark-color);
 }
 
