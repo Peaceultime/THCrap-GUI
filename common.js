@@ -165,7 +165,7 @@ utils.get = function(url, headers)
 	});
 };
 /**
- * Fetch the object asynchroniously. Similar to Array.prototype.forEach()
+ * Fetch the object asynchroniously. Similar to Array.prototype.forEach(), but asynchrone.
  * @param  {Object|Array} object Fetch object, can be an object or an array
  * @param  {Function} callback   Function called at each iteration. This is the fetched object
  *         @param {Any} item		Item in the actual iteration
@@ -232,8 +232,16 @@ utils.window = function(file, options)
  * PLEASE NOTE THAT EVERY VARIABLE STARTING WITH _ ARE SUPPOSE TO BE PRIVATE AND NOT USED OUTSIDE OF
  * THE CLASS ITSELF
  */
+/**
+ * Settings class, useful to quickly create, load, edit and save the settings
+ */
 utils.settings = class
 {
+	/**
+	 * Constructor load settings or create default ones
+	 * @return {Promise} Promise resolved when the settings are loaded or created
+	 *         @param {utils.settings} this Settings object
+	 */
 	constructor()
 	{
 		return new Promise(function(res, rej) {
@@ -261,15 +269,19 @@ utils.settings = class
 			}.bind(this));
 		}.bind(this));
 	}
-	get lang()
+	get(id)
 	{
-		return this._settings.lang;
+		return this._settings[id];
 	}
-	set lang(lang)
+	set(id, value)
 	{
-		this._settings.lang = lang;
+		this._settings[id] = value;
 		this._dirty = true;
 	}
+	/**
+	 * Save the settings if they are different from the original ones
+	 * @return {Promise} Promise resolved when the saving is finished
+	 */
 	save()
 	{
 		if(this._dirty)
@@ -288,6 +300,10 @@ utils.settings = class
 		}
 	}
 }
+/**
+ * Translation class, contain the language and all the translation data
+ * It is designed to allow quick language changing
+ */
 utils.translation = class
 {
 	constructor(lang)

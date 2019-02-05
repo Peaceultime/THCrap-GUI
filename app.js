@@ -1,5 +1,17 @@
 "use strict";
 
+window.addEventListener("DOMContentLoaded", function() {
+	new utils.settings().then(function(set) {
+		settings = set;
+		new utils.translation(settings.get("lang")).then(function(trsl) {
+			translation = trsl;
+			translation.translate().catch(function(e) {
+				console.error(e);
+			});
+		});
+	});
+});
+
 window.addEventListener("load", function() {
 	let tabs = document.querySelectorAll(".app-tabs .tab");
 	let tabContainers = document.querySelectorAll(".tab-container");
@@ -21,13 +33,19 @@ window.addEventListener("load", function() {
 		});
 	}
 
-	document.querySelector(".close-window").addEventListener("click", win.close);
-	document.querySelector(".maximize-window").addEventListener("click", function(){
+	document.querySelector(".close-app").addEventListener("click", function() {
+		win.close();
+	});
+	document.querySelector(".maximaze-app").addEventListener("click", function(){
 		if(win.isMaximized())
 			win.unmaximize();
 		else
 			win.maximize();
 	});
-	document.querySelector(".minimize-window").addEventListener("click", win.minimize);
-	document.querySelector(".settings").addEventListener("click", win.close);
+	document.querySelector(".minimize-app").addEventListener("click", function() {
+		win.minimize();
+	});
+	document.querySelector(".settings").addEventListener("click", function() {
+		win.toggleDevTools();
+	});
 });
