@@ -1,3 +1,8 @@
+/**
+ * @description Every functions must be commented to ensure full understanding of the software.
+ * Note that a resolved promise can only have one argument, so if you want to return more arguments,
+ * you must return an object.
+ */
 "use strict";
 
 const remote = require('electron').remote;
@@ -32,18 +37,20 @@ utils.absolute = function(dest)
  */
 utils.rmkdir = function(dest, callback)
 {
-	if(verbose)
-		console.log("Creating " + dest);
-
 	fs.mkdir(dest, function(err) {
 		if(err && err.code !== "EEXIST" && err.code !== "ENOENT")
 			callback(err);
 		else if(err && err.code === "ENOENT")
-			dirTest(path.normalize(path.join(dir, "..")), function() {
-				dirTest(dir, callback);
+			utils.rmkdir(path.normalize(path.join(dest, "..")), function() {
+				utils.rmkdir(dest, callback);
 			});
 		else
+		{
+			if(verbose)
+				console.log("Creating " + dest);
+
 			callback();
+		}
 	});
 };
 /**
@@ -204,13 +211,6 @@ utils.for = function(object, callback)
 	return loop();
 };
 /**
- * Link utils.for to the Object prototype
- */
-Object.prototype.for = Array.prototype.for = function(callback)
-{
-	return utils.for(this, callback);
-};
-/**
  * Replace the actual window with a new window from the given filename
  * @param  {string} file    File of the new window
  * @param  {Object} options Options for the window creation.
@@ -244,22 +244,24 @@ utils.settings = class
 	 */
 	constructor()
 	{
+		this._settings = {
+			"lang": "en",
+			"first_repo": "http://thcrap.nmlgc.net/repos/nmlgc/"
+		};
+
 		return new Promise(function(res, rej) {
 			fs.readFile(path.join(__dirname, "settings.json"), function(e, data) {
 				if(e && e.code !== "ENOENT")
 					rej(e);
 				else if(e)
 				{
-					this._settings = {
-						"lang": "en"
-					};
 					this._dirty = true;
 					this.save().then(() => res(this));
 				}
 				else
 				{
 					try {
-						this._settings = JSON.parse(data);
+						this._settings = Object.assign(this._settings, JSON.parse(data));
 						this._dirty = false;
 						res(this);
 					} catch(e) {
@@ -269,14 +271,27 @@ utils.settings = class
 			}.bind(this));
 		}.bind(this));
 	}
+	/**
+	 * Get the data stored in settings with a given key
+	 * @param {string} id Given id
+	 */
 	get(id)
 	{
 		return this._settings[id];
 	}
+	/**
+	 * Set a new value for the given key, and allow saving new data if the new value is different
+	 * from the previous one
+	 * @param {string} id Given id
+	 * @param {any} value New value
+	 */
 	set(id, value)
 	{
-		this._settings[id] = value;
-		this._dirty = true;
+		if(this._settings[id] != value)
+		{
+			this._settings[id] = value;
+			this._dirty = true;
+		}
 	}
 	/**
 	 * Save the settings if they are different from the original ones
@@ -345,11 +360,239 @@ utils.translation = class
 		if(verbose)
 			console.log("Translation started");
 
-		return translatable.for(function(itm, key, index) {
+		return utils.for(translatable, function(itm, key, index) {
 			let translate = this.translation(itm.getAttribute("trid"));
 			if(translate instanceof Error)
 				return Promise.reject(translate);
 			itm.textContent = (typeof translate === "undefined" ? "unknown" : translate);
+			return Promise.resolve();
 		}.bind(this));
+	}
+}
+/**
+ * Patches class, contain all the patches and repos datas, allow us to easily load and
+ * download patches and repos.
+ * @todo
+ */
+utils.patches = class
+{
+	/**
+	 * Try to load datas from the files, if it can't, it will get all repos data then download
+	 * everything
+	 * @return {Promise} Promise resolved when all data are loaded
+	 * @todo
+	 */
+	constructor()
+	{
+		this._patches = {};
+		this._repos = {};
+
+		return new Promise(function(res, rej) {
+			this.fetch(settings.get("first_repo")).then(function(urls) {
+				this.download(urls).then(res).catch(rej);
+			}.bind(this));
+		}.bind(this));
+	}
+	/**
+	 * Get all the patches URL from the given URL, and save the repo data
+	 * @param {string} url First repo URL, it's suppose to neighbor all other servers
+	 * @return {Promise}   Promise resolved when all servers have been fetched
+	 *         @param {Array} patches Array of patches URL
+	 * @todo
+	 */
+	fetch(url)
+	{
+		let fetch = [url];
+		let fetched = [];
+		let repos = {};
+
+		let fetching = function() {
+			return utils.get(fetch[0] + "/repo.js").then(function(data) {
+				try {
+					data = JSON.parse(data.body);
+				} catch(e) {
+					return Promise.reject(e);
+				}
+
+				let patches = {};
+				for(let i in data.patches)
+					patches[i] = fetch[0] + "/" + i;
+
+				repos[data.id] = patches;
+				if(data.neighbors)
+					for(let neighbor of data.neighbors)
+						if(!fetched.includes(neighbor))
+							fetch.push(neighbor);
+
+				fetched.push(fetch[0]);
+				fetch.splice(0, 1);
+			}).then(function() {
+				if(fetch.length == 0)
+					return Promise.resolve(repos);
+				else
+					return fetching();
+			});
+		};
+		return fetching();
+	}
+	/**
+	 * Download and save patches data from the given URL array
+	 * @param {Object} repos    Object containing repos
+	 *        @param {Object}   For each repo, there is an object containing patch URL with their
+	 *                          name as ID
+	 * @return {Promise} Promise resolved when the download and save are finished
+	 */
+	download(repos)
+	{
+		return utils.for(repos, function(patches, repo) {
+			return utils.for(patches, function(itm, key) {
+				return utils.get(itm + "/patch.js").then(function(data) {
+
+					try {
+						this._patches[key] = JSON.parse(data.body);
+						this._patches[key].repo = repo;
+
+						if(verbose)
+							console.log("Patch " + key + " loaded");
+
+						return Promise.resolve();
+					} catch(e) {
+						return Promise.reject();
+					}
+				}.bind(this));
+			}.bind(this))
+		}.bind(this)).then(function() {
+			return this.save();
+		}.bind(this));
+	}
+	/**
+	 * Save data in files
+	 * @return {Promise} Promise resolved when all files have been succesfully saved
+	 */
+	save()
+	{
+		if(verbose)
+			console.log("Saving patch data");
+
+		return utils.for(this._patches, function(itm, key) {
+			return new Promise(function(res, rej) {
+				let dest = path.join(__dirname, "patches", itm.repo, key);
+				utils.rmkdir(dest, function() {
+					fs.writeFile(path.join(dest, "patch.js"), JSON.stringify(itm), function(e) {
+						if(e)
+							rej(e);
+						else
+						{
+							if(verbose)
+								console.log("Patch " + key + " saved");
+							res();
+						}
+					});
+				});
+			});
+		});
+	}
+	/**
+	 *
+	 * @param {string} id Selected patch ID
+	 * @todo
+	 */
+	select(id)
+	{
+
+	}
+}
+/**
+ * Profiles class, contain all profiles data
+ */
+utils.profiles = class
+{
+	/**
+	 * @todo
+	 */
+	constructor()
+	{
+
+	}
+	/**
+	 *
+	 * @return {Promise} [description]
+	 *         @param {Object} [varname] [description]
+	 * @todo
+	 */
+	add()
+	{
+
+	}
+	/**
+	 *
+	 * @param {stirng} id [description]
+	 * @return {Promise}  [description]
+	 * @todo
+	 */
+	remove(id)
+	{
+
+	}
+	/**
+	 *
+	 * @return {Promise} [description]
+	 * @todo
+	 */
+	save()
+	{
+
+	}
+	/**
+	 *
+	 * @param {string} id   [description]
+	 * @param {string} name [description]
+	 * @return {Promise}    [description]
+	 * @todo
+	 */
+	rename(id, name)
+	{
+
+	}
+	/**
+	 *
+	 * @param {string} id [description]
+	 * @todo
+	 */
+	select(id)
+	{
+
+	}
+}
+/**
+ * Games class, contain all games data, like name, version and path
+ * Also contain the sha256 and size data for everygames
+ */
+utils.games = class
+{
+	/**
+	 * @todo
+	 */
+	constructor()
+	{
+
+	}
+	/**
+	 *
+	 * @param {string} path [description]
+	 * @todo
+	 */
+	search(path)
+	{
+
+	}
+	/**
+	 *
+	 * @param {string} id [description]
+	 * @todo
+	 */
+	select(id)
+	{
+
 	}
 }

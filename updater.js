@@ -12,7 +12,7 @@ function closeWindow()
  */
 function update()
 {
-
+	utils.window("app.html", {frame: false, minWidth: 800, minHeight: 600});
 }
 
 window.addEventListener("DOMContentLoaded", function() {
@@ -26,4 +26,4 @@ window.addEventListener("DOMContentLoaded", function() {
 		});
 	});
 });
-//window.addEventListener("load", update);
+window.addEventListener("load", update);

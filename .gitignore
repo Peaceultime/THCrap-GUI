@@ -1,5 +1,5 @@
 node_modules
-patch
+patches
 package.json
 package-lock.json
 settings.json
