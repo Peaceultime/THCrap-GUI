@@ -1,5 +1,9 @@
 "use strict";
 
+const { shell } = require("electron");
+
+let patches, profiles, games;
+
 window.addEventListener("DOMContentLoaded", function() {
 	new utils.settings().then(function(set) {
 		settings = set;
@@ -9,6 +13,12 @@ window.addEventListener("DOMContentLoaded", function() {
 				console.error(e);
 			});
 		});
+		new utils.patches().then(function(data) {
+			patches = data;
+		});
+	});
+	new utils.profiles().then(function(data) {
+		profiles = data;
 	});
 });
 

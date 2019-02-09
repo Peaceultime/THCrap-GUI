@@ -15,7 +15,7 @@ function update()
 	utils.window("app.html", {frame: false, minWidth: 800, minHeight: 600});
 }
 
-window.addEventListener("DOMContentLoaded", function() {
+window.addEventListener("DOMContentLoaded", async function() {
 	new utils.settings().then(function(set) {
 		settings = set;
 		new utils.translation(settings.get("lang")).then(function(trsl) {

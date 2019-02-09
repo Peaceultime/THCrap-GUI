@@ -70,10 +70,8 @@
 			</div>
 			<div class="patchs-tab tab-container" tab="patchs">
 				<div class="patch-list">
-					<div class="patch-list-header" trid="patch-list-title">Patch list</div>
-					<div class="scrolling">
-						<div class="patch" patchid="0">lang_en</div>
-					</div>
+					<div class="patch-list-header" trid="patch-list-title"></div>
+					<div class="scrolling"></div>
 					<div class="patch-list-actions">
 
 					</div>
@@ -90,22 +88,20 @@
 					</div>
 					<div class="selected-patch">
 						<div class="selected-patch-infos">
-							<div class="selected-patch-title">Lang_en</div>
-							<div class="selected-patch-origin">from the repo nmlgc</div>
+							<div class="selected-patch-title"></div>
+							<div class="selected-patch-origin"></div>
 						</div>
-						<div class="selected-patch-description">
-							English language pack
-						</div>
+						<div class="selected-patch-description"></div>
 						<div class="selected-patch-details">
-							<div class="selected-patch-dependencies">4 dependencies</div>
+							<div class="selected-patch-dependencies"></div>
 							<div class="selected-patch-depends-of">X patchs depends of it</div>
 						</div>
 					</div>
 					<div class="button-wrapper">
-						<button class="change-button" trid="change-remove-button">Remove from profile</button>
-						<button class="more-infos-button" trid="more-infos-button">More informations</button>
+						<button class="change-button" trid="change-remove-button"></button>
+						<button class="more-infos-button" trid="more-infos-button" onclick="if(patches && patches._selectedPatch) shell.openExternal('https://www.thpatch.net/wiki/Patch:' + patches._selectedPatch);"></button>
 						<div class="more-button-wrapper">
-							<button class="profile-button" trid="profile-button">Change profile</button>
+							<button class="profile-button" trid="profile-button"></button>
 							<div class="more-button">
 								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
 									<circle cx="12" cy="8" r="2" fill="#DFDFDF"></circle>

@@ -1,6 +1,6 @@
 {
 	"games": "Games",
-	"patchs": "Patchs",
+	"patchs": "Patches",
 	"settings": "Settings",
 	"run-vanilla": "Run the game (vanilla)",
 	"run-patched": "Run the game (patched)",
@@ -9,5 +9,12 @@
 	"change-add-button": "Add to profile",
 	"change-remove-button": "Remove from profile",
 	"more-infos-button": "More informations",
-	"profile-button": "Change profile"
+	"profile-button": "Change profile",
+	"from-repo": "from the repo ",
+	"single-depend": " dependency",
+	"plural-depend": " dependencies",
+	"no-depend": "No dependency",
+	"profile": "Profile",
+	"from": "from ",
+	"dependency": "(dependency)"
 }

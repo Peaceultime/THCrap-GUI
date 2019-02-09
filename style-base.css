@@ -314,6 +314,12 @@ html, body, div, header, button {
     background-color: var(--dark-color);
 }
 
+.patch-dependency {
+    display: inline;
+    padding: 0px 12px;
+    font-size: 0.7em;
+}
+
 .selected-patch {
     margin: 0 56px;
     padding: 16px 8px;
