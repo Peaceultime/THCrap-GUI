@@ -71,19 +71,12 @@
 			<div class="patchs-tab tab-container" tab="patchs">
 				<div class="patch-list">
 					<div class="patch-list-header" trid="patch-list-title"></div>
-					<div class="scrolling"></div>
-					<div class="patch-list-actions">
-
-					</div>
+					<div class="scrolling loading"></div>
 				</div>
 				<div class="profile-patches">
 					<div class="profile">
-						<div class="profile-title">Profile: English profile for games</div>
+						<div class="profile-title"></div>
 						<div class="profile-patches-list">
-							<div class="profile-patch">
-								<div class="patch-name">lang_en</div>
-								<div class="patch-origin">from thpatch</div>
-							</div>
 						</div>
 					</div>
 					<div class="selected-patch">
@@ -101,7 +94,7 @@
 						<button class="change-button" trid="change-remove-button"></button>
 						<button class="more-infos-button" trid="more-infos-button" onclick="if(patches && patches._selectedPatch) shell.openExternal('https://www.thpatch.net/wiki/Patch:' + patches._selectedPatch);"></button>
 						<div class="more-button-wrapper">
-							<button class="profile-button" trid="profile-button"></button>
+							<button class="profile-button" trid="profile-button" onclick="profiles.display().then((profile) => {profiles.select(profile)}).catch(() => {return});"></button>
 							<div class="more-button">
 								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
 									<circle cx="12" cy="8" r="2" fill="#DFDFDF"></circle>

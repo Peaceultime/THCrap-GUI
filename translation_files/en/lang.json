@@ -13,8 +13,14 @@
 	"from-repo": "from the repo ",
 	"single-depend": " dependency",
 	"plural-depend": " dependencies",
+	"single-patch": " patch",
+	"plural-patch": " patches",
 	"no-depend": "No dependency",
 	"profile": "Profile",
+	"profiles": "Profiles",
 	"from": "from ",
-	"dependency": "(dependency)"
+	"dependency": "(dependency)",
+	"new-profile": "New profile",
+	"rename": "Rename",
+	"confirm": "Confirm"
 }

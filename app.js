@@ -15,6 +15,7 @@ window.addEventListener("DOMContentLoaded", function() {
 		});
 		new utils.patches().then(function(data) {
 			patches = data;
+			patches._patchListDOM.classList.remove("loading");
 		});
 	});
 	new utils.profiles().then(function(data) {
