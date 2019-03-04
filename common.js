@@ -11,6 +11,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const URL = require('url');
+const crypto = require("crypto");
 
 var win = remote.getCurrentWindow();
 const verbose = true;
@@ -260,6 +261,27 @@ Array.prototype.fill = function(item)
 {
 	return utils.fill(this, item);
 };
+/**
+ * Return the sha256 checksum of the given file
+ * @param  {string} file Given filename
+ * @return {string}      Promise resolved when the checksum is finished
+ *         @param {string} sha256 SHA256 value
+ */
+utils.sha256 = function(file)
+{
+	return new Promise(function(res, rej) {
+		const hash = crypto.createHash("sha256");
+
+		const input = fs.createReadStream(file);
+		input.on("readable", function() {
+			const data = input.read();
+			if(data)
+				hash.update(data);
+			else
+				res(hash.digest('hex'));
+		});
+	});
+}
 
 
 /**
@@ -300,7 +322,7 @@ utils.settings = class
 				else
 				{
 					try {
-						this._settings = Object.assign(this._settings, JSON.parse(data));
+						this._settings = Object.seal(Object.assign(this._settings, JSON.parse(data)));
 						this._dirty = false;
 						res(this);
 					} catch(e) {
@@ -379,7 +401,7 @@ utils.translation = class
 				else
 				{
 					try {
-						this._cachedTranslation = JSON.parse(data);
+						this._cachedTranslation = Object.freeze(JSON.parse(data));
 						res(this);
 					} catch(e) {
 						rej(e);
@@ -466,29 +488,31 @@ utils.patches = class
 	loadRepos()
 	{
 		return new Promise(function(res, rej) {
-			fs.readdir(path.join(__dirname, "patches"), function(e, files) {
-				if(e)
-					rej(e);
-				else
-				{
-					utils.for(files, function(itm, key, i) {
-						return new Promise(function(_res, _rej) {
-							fs.readFile(path.join(__dirname, "patches", itm, "repo.json"), function(_e, data) {
-								if(_e)
-									_rej(_e);
-								else
-								{
-									try {
-										this._repos[itm] = JSON.parse(data);
-										_res();
-									} catch(__e) {
-										_rej(__e);
+			utils.rmkdir(path.join(__dirname, "patches"), function() {
+				fs.readdir(path.join(__dirname, "patches"), function(e, files) {
+					if(e)
+						rej(e);
+					else
+					{
+						utils.for(files, function(itm, key, i) {
+							return new Promise(function(_res, _rej) {
+								fs.readFile(path.join(__dirname, "patches", itm, "repo.json"), function(_e, data) {
+									if(_e)
+										_rej(_e);
+									else
+									{
+										try {
+											this._repos[itm] = JSON.parse(data);
+											_res();
+										} catch(__e) {
+											_rej(__e);
+										}
 									}
-								}
+								}.bind(this));
 							}.bind(this));
-						}.bind(this));
-					}.bind(this)).then(res).catch(rej);
-				}
+						}.bind(this)).then(res).catch(rej);
+					}
+				}.bind(this));
 			}.bind(this));
 		}.bind(this));
 	}
@@ -811,10 +835,6 @@ utils.profiles = class
 					this._profiles[id].dependencies.fill(dependencies[i]);
 			}
 
-			let i = this._profiles[id].dependencies.findIndex(function(e) { return e === patch; });
-			if(i !== undefined)
-				delete this._profiles[id].dependencies[i];
-
 			return true;
 		}
 		return false;
@@ -834,7 +854,25 @@ utils.profiles = class
 			{
 				this._dirty = true;
 
-				return delete this._profiles[id].patches[i];
+				delete this._profiles[id].patches[i];
+
+				let dependencies = [];
+				for(let i in this._profiles[this._selected].patches)
+				{
+					let patch = this._profiles[this._selected].patches[i];
+					if(patch)
+					{
+						let dep = patches.dependencies(patch);
+						for(let j in dep)
+						{
+							if(!dependencies.includes(dep[j]))
+								dependencies.push(dep[j]);
+						}
+					}
+				}
+				this._profiles[this._selected].dependencies = dependencies;
+
+				return true;
 			}
 		}
 		return false;
@@ -914,6 +952,9 @@ utils.profiles = class
 	 */
 	refresh()
 	{
+		let text_dependency = translation.translation("dependency");
+		let text_from = translation.translation("from");
+
 		this._profileDOM.querySelector(".profile-title").textContent = translation.translation("profile") + ": " + this._profiles[this._selected].name;
 		let list = this._profileDOM.querySelector(".profile-patches-list");
 		list.innerHTML = "";
@@ -925,7 +966,7 @@ utils.profiles = class
 			name.textContent = patch.id;
 			let origin = document.createElement("div");
 			origin.classList.add("patch-origin");
-			origin.textContent = translation.translation("from") + patch.repo;
+			origin.textContent = text_from + patch.repo;
 			let node = document.createElement("div");
 			node.appendChild(name);
 			node.appendChild(origin);
@@ -937,23 +978,26 @@ utils.profiles = class
 		for(let i in this._profiles[this._selected].dependencies)
 		{
 			let patch = patches._patches[this._profiles[this._selected].dependencies[i]];
-			let dependency = document.createElement("div");
-			dependency.classList.add("patch-dependency");
-			dependency.textContent = translation.translation("dependency");
-			let name = document.createElement("div");
-			name.classList.add("patch-name");
-			name.textContent = patch.id;
-			name.appendChild(dependency);
-			let origin = document.createElement("div");
-			origin.classList.add("patch-origin");
-			origin.textContent = translation.translation("from") + patch.repo;
-			let node = document.createElement("div");
-			node.appendChild(name);
-			node.appendChild(origin);
-			node.classList.add("profile-patch");
-			node.setAttribute("patch_id", patch.id);
-			node.onclick = function() { patches.select(this.getAttribute("patch_id")); };
-			list.appendChild(node);
+			if(!this._profiles[this._selected].patches.includes(patch.id))
+			{
+				let dependency = document.createElement("div");
+				dependency.classList.add("patch-dependency");
+				dependency.textContent = text_dependency;
+				let name = document.createElement("div");
+				name.classList.add("patch-name");
+				name.textContent = patch.id;
+				name.appendChild(dependency);
+				let origin = document.createElement("div");
+				origin.classList.add("patch-origin");
+				origin.textContent = text_from + patch.repo;
+				let node = document.createElement("div");
+				node.appendChild(name);
+				node.appendChild(origin);
+				node.classList.add("profile-patch");
+				node.setAttribute("patch_id", patch.id);
+				node.onclick = function() { patches.select(this.getAttribute("patch_id")); };
+				list.appendChild(node);
+			}
 		}
 	}
 	/**
@@ -981,7 +1025,57 @@ utils.games = class
 	 */
 	constructor()
 	{
+		this._games = {};
+		this._check = {};
 
+		return new Promise(function(res, rej) {
+			this.getCheck().then(function() {
+				fs.readFile("games.json", function(e, data) {
+					if(e)
+						rej(e);
+					else
+					{
+						try {
+							this._games = Object.assign(this._games, JSON.parse(data));
+							utils.for(this._games, this.check).then(function() { res(this); }).catch(rej);
+						} catch(_e) {
+							rej(_e);
+						}
+					}
+				}.bind(this));
+			}.bind(this));
+		}.bind(this));
+	}
+	getCheck()
+	{
+		return new Promise(function(res, rej) {
+			
+		});
+	}
+	/**
+	 * [Need description]
+	 * @param {Object} game [Need description]
+	 * @param {string} id   [Need description]
+	 * @return {Promise}    [Need description]
+	 */
+	check(game, id)
+	{
+		return new Promise(function(res, rej) {
+			fs.stat(game.gamePath, function(e, stat) {
+				if(e)
+					rej(e);
+				if(stat.isFile() && this._check.sizes[stat.size])
+				{
+					utils.sha256(game.gamePath).then(function(sha) {
+						let data = this._check.hashes[sha];
+						this._games[id] = Object.assign(game, data);
+						res();
+					}.bind(this));
+				}
+				else
+					res();
+			}.bind(this));
+		}.bind(this));
 	}
 	/**
 	 * [Need description]
@@ -998,6 +1092,15 @@ utils.games = class
 	 * @todo
 	 */
 	select(id)
+	{
+
+	}
+	/**
+	 * [Need description]
+	 * @param {string} file [Need description]
+	 * @param {string} id   [Need description]
+	 */
+	conflict(file, id)
 	{
 
 	}
