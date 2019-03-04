@@ -260,6 +260,45 @@ Array.prototype.fill = function(item)
 {
 	return utils.fill(this, item);
 };
+/**
+ * Create a node with the given tag, classes and append childrens, then return it
+ * @param  {string} tag           Tag of the node
+ * @param  {Array|string} classes Classes of the future node
+ * @param  {Array|Node} childrens Childrens to append
+ * @param  {string} text          TextContent of the node
+ * @param  {Object} attributes    Attributes of the future node
+ * @return {Node}                 Created node
+ */
+utils.node = function(tag, classes, childrens, text, attributes)
+{
+	if(!tag)
+		return;
+	let node = document.createElement(tag);
+	if(classes)
+	{
+		if(Array.isArray(classes))
+			DOMTokenList.prototype.add.apply(node.classList, classes);
+		else if(typeof classes === "string")
+			node.classList.add(classes);
+	}
+	if(childrens)
+	{
+		if(Array.isArray(childrens))
+		{
+			for(let i in childrens)
+				if(childrens[i] instanceof Node)
+					node.appendChild(childrens[i]);
+		}
+		else if(childrens instanceof Node)
+			node.appendChild(childrens);
+	}
+	if(text && typeof text === "string")
+		node.textContent = text;
+	if(attributes && typeof attributes === "object")
+		for(let i in attributes)
+			node.setAttribute(i, attributes[i]);
+	return node;
+};
 
 
 /**
@@ -906,6 +945,7 @@ utils.profiles = class
 		if(verbose)
 			console.log("Selecting profile " + this._profiles[id].name);
 
+		if(id !== null)
 		this._selected = id;
 		this.refresh();
 	}
@@ -968,10 +1008,94 @@ utils.profiles = class
 			return !!this._profiles[id].patches.find(function(e) { return e === patch; });
 		return false;
 	}
+	/**
+	 * Display the profile selector, allowing to create, delete, rename and select profiles.
+	 * @return {Promise} Promise resolved when a patch is selected
+	 */
+	display()
+	{
+		return new Promise(function(res, rej) {
+			let addNode = function(i, profile)
+			{
+				let node = utils.node("div", "profile-wrapper", [
+					utils.node("div", "popup-profile-title", [], profile.name),
+					utils.node("div", "popup-profile-patches", [], profile.patches.length + (profile.patches.length > 1 ? translation.translation("plural-patch") : translation.translation("single-patch"))),
+					utils.node("div", "popup-profile-depends", [], profile.dependencies.length + (profile.dependencies.length > 1 ? translation.translation("plural-depend") : translation.translation("single-depend")))
+				]);
+				node.profile = i;
+				if(this._selected == i)
+					node.classList.add("selected");
+				node.addEventListener("click", function() {
+					selectedProfile = this.profile;
+					for(let j of this.parentElement.children)
+						j.classList.remove("selected");
+					this.classList.add("selected");
+				});
+				node.addEventListener("dblclick", function() {
+					popup.close();
+					res(selectedProfile);
+				});
+
+				return node;
+			}
+
+			let arr = [];
+			let selectedProfile = this._selected;
+			for(let i in this._profiles)
+				arr.push(addNode.bind(this)(i, this._profiles[i]));
+			let wrapper = utils.node("div", "popup-body-wrapper", arr);
+
+			let select = utils.node("button", ["popup-button", "select-button"], [], "Select");
+			select.addEventListener("click", function() {
+				if(selectedProfile === null)
+					return;
+				popup.close();
+				res(selectedProfile);
+			});
+
+			let add = utils.node("button", ["popup-button", "add-button"], [], "Add");
+			add.addEventListener("click", function() {
+				let i = this.add(translation.translation("new-profile"));
+				wrapper.appendChild(addNode.bind(this)(i, this._profiles[i]))
+			}.bind(this));
+
+			let rename = utils.node("button", ["popup-button", "rename-button"], [], "Rename");
+			rename.addEventListener("click", function() {
+				if(selectedProfile === null)
+					return;
+				let input = utils.node("input", "popup-rename-field", [], null, {"type": "text", "value": this._profiles[selectedProfile].name});
+				let button = utils.node("button", "popup-rename-button", [], translation.translation("confirm"));
+				button.addEventListener("click", function() {
+					this.rename(selectedProfile, input.value);
+					wrapper.removeChild(wrapper.querySelector(".selected"));
+					let node = addNode.bind(this)(selectedProfile, this._profiles[selectedProfile]);
+					node.classList.add("selected");
+					wrapper.appendChild(node);
+					renamePopup.close();
+				}.bind(this));
+				let renamePopup = new utils.popup(translation.translation("rename"), [
+						utils.node("div", "popup-rename-wrapper", [input, button])
+					]);
+			}.bind(this));
+
+			let remove = utils.node("button", ["popup-button", "remove-button"], [], "Remove");
+			remove.addEventListener("click", function() {
+				if(selectedProfile !== null)
+				{
+					this.remove(selectedProfile);
+					wrapper.removeChild(wrapper.querySelector(".selected"));
+					selectedProfile = null;
+				}
+			}.bind(this));
+
+			let popup = new utils.popup(translation.translation("profiles"), [wrapper,
+					utils.node("div", "popup-buttons-wrapper", [select, add, rename, remove])]);
+		}.bind(this));
+	}
 }
 /**
  * Games class, contain all games data, like name, version and path
- * Also contain the sha256 and size data for everygames
+ * Also contain the sha256 and size data for every games
  */
 utils.games = class
 {
@@ -1000,5 +1124,52 @@ utils.games = class
 	select(id)
 	{
 
+	}
+}
+utils.popup = class
+{
+	/**
+	 * Create a popup and append the given nodes inside
+	 * @param  {Array|Node} node Appended nodes
+	 * @param  {string} title    Title of the popup
+	 */
+	constructor(title, node)
+	{
+		this._closePromise = new Promise(function(res, rej) {
+			this._res = res;
+			this._rej = rej;
+			let close = utils.node("span", "close-popup");
+			close.addEventListener("click", function() {
+				this.close();
+			}.bind(this));
+
+			let arr = [utils.node("div", "popup-title-wrapper", [
+							utils.node("div", "popup-title", [], title),
+							close
+							]
+						)];
+			if(node)
+			{
+				if(Array.isArray(node))
+				{
+					for(let i in node)
+						if(node[i] instanceof Node)
+							arr.push(node[i]);
+				}
+				else if(node instanceof Node)
+					arr.push(node);
+			}
+			this.main = utils.node("div", "background-container", utils.node("div", "foreground-popup", arr));
+			document.body.appendChild(this.main);
+		}.bind(this));
+	}
+	close()
+	{
+		if(this.main)
+			document.body.removeChild(this.main);
+	}
+	get promise()
+	{
+		return this._closePromise;
 	}
 }
