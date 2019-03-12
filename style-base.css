@@ -159,6 +159,8 @@ html, body, div, header, button {
 	display: inline-block;
 	max-width: 268px;
 	text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .game-title {

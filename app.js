@@ -21,6 +21,9 @@ window.addEventListener("DOMContentLoaded", function() {
 	new utils.profiles().then(function(data) {
 		profiles = data;
 	});
+	new utils.games().then(function(data) {
+		games = data;
+	});
 });
 
 window.addEventListener("load", function() {
@@ -30,6 +33,9 @@ window.addEventListener("load", function() {
 	for(let i of tabs)
 	{
 		i.addEventListener("click", function(e) {
+			if(verbose)
+				console.log("Switching to tab " + this.textContent);
+
 			let attr = this.getAttribute("action-tab");
 			for(let i of tabContainers)
 			{
@@ -43,6 +49,30 @@ window.addEventListener("load", function() {
 			this.classList.add("active");
 		});
 	}
+
+	document.querySelector(".vanilla-button").addEventListener("click", function() {
+		games.launch(this.gameId, true).then(function() {
+			this.textContent = translation.translation(this.getAttribute('trid'))
+		}.bind(this)).catch(function(e) {
+			this.textContent = e;
+			setTimeout(function() {
+				this.textContent = translation.translation(this.getAttribute('trid'))
+			}.bind(this), 5000);
+		}.bind(this));
+		this.textContent = translation.translation('game-launched');
+	});
+
+	document.querySelector(".patched-button").addEventListener("click", function() {
+		games.launch(this.gameId, false).then(function() {
+			this.textContent = translation.translation(this.getAttribute('trid'))
+		}.bind(this)).catch(function(e) {
+			this.textContent = e;
+			setTimeout(function() {
+				this.textContent = translation.translation(this.getAttribute('trid'))
+			}.bind(this), 5000);
+		}.bind(this));
+		this.textContent = translation.translation('game-launched');
+	});
 
 	document.querySelector(".close-app").addEventListener("click", function() {
 		win.close();

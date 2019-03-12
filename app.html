@@ -4,14 +4,15 @@
 		<meta charset="UTF-8">
 		<title>Touhou Community Reliant Automatic Patcher</title>
 		<link rel="stylesheet" type="text/css" href="style-base.css">
+		<script type="text/javascript" src="static.js"></script>
 		<script type="text/javascript" src="common.js"></script>
 		<script type="text/javascript" src="app.js"></script>
 	</head>
 	<body>
 		<div class="app-header">
 			<div class="app-tabs">
-				<div class="tab" trid="games" action-tab="games"></div>
-				<div class="tab active" trid="patchs" action-tab="patchs"></div>
+				<div class="tab active" trid="games" action-tab="games"></div>
+				<div class="tab" trid="patchs" action-tab="patchs"></div>
 				<div class="tab" trid="settings" action-tab="settings"></div>
 			</div>
 			<div class="app-title"></div>
@@ -31,31 +32,19 @@
 			</div>
 		</div>
 		<div class="wrapper">
-			<div class="games-tab tab-hidden tab-container" tab="games">
-				<div class="scrolling">
-					<div class="game-scroll">
-						<div class="game-infos">
-							<span class="game-cover" style="background-image: url('img/07.jpg')"></span>
-							<div class="game-data">
-								<div class="game-title">Touhou 07 - 東方妖々夢</div>
-								<div class="game-version">v1.07a</div>
-								<div class="game-english">Perfect Cherry Blossom</div>
-								<div class="game-warning"><span class="warning-icon"></span>The game don't support patching yet</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="game-details" game="07">
+			<div class="games-tab tab-container" tab="games">
+				<div class="scrolling"></div>
+				<div class="game-details">
 					<div class="gameplay-background" style="background-image: url('img/07gameplay.png')">
 						<span class="details-title">Touhou 07</span>
 					</div>
 					<div class="details-wrapper">
 						<div class="details-desc">Some text about the game and the story.</div>
 						<div class="button-wrapper">
-							<button trid="run-vanilla"></button>
-							<button trid="run-patched"></button>
+							<button trid="run-vanilla" class="vanilla-button"></button>
+							<button trid="run-patched" class="patched-button"></button>
 							<div class="more-button-wrapper">
-								<button trid="config-game"></button>
+								<button trid="profile-button" onclick="profiles.display().then((profile) => {profiles.select(profile)}).catch(() => {return});"></button>
 								<div class="more-button">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
 										<circle cx="12" cy="8" r="2" fill="#DFDFDF"></circle>
@@ -68,7 +57,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="patchs-tab tab-container" tab="patchs">
+			<div class="patchs-tab tab-hidden tab-container" tab="patchs">
 				<div class="patch-list">
 					<div class="patch-list-header" trid="patch-list-title"></div>
 					<div class="scrolling loading"></div>

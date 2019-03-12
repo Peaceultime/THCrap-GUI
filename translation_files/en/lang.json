@@ -4,7 +4,6 @@
 	"settings": "Settings",
 	"run-vanilla": "Run the game (vanilla)",
 	"run-patched": "Run the game (patched)",
-	"config-game": "Config the game",
 	"patch-list-title": "Patch list",
 	"change-add-button": "Add to profile",
 	"change-remove-button": "Remove from profile",
@@ -22,5 +21,10 @@
 	"dependency": "(dependency)",
 	"new-profile": "New profile",
 	"rename": "Rename",
-	"confirm": "Confirm"
+	"confirm": "Confirm",
+	"not-installed": "This game isn't installed yet",
+	"not-patchable": "The selected game isn't patchable",
+	"already-running": "A game is already running",
+	"no-profile": "No profile selected",
+	"game-launched": "The game is running"
 }

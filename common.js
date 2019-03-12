@@ -344,10 +344,7 @@ utils.settings = class
 	 */
 	constructor()
 	{
-		this._settings = {
-			"lang": "en",
-			"first_repo": "http://thcrap.nmlgc.net/repos/nmlgc/"
-		};
+		this._settings = defaultSettings;
 
 		return new Promise(function(res, rej) {
 			fs.readFile(path.join(__dirname, "settings.json"), function(e, data) {
@@ -441,7 +438,20 @@ utils.translation = class
 				{
 					try {
 						this._cachedTranslation = Object.freeze(JSON.parse(data));
-						res(this);
+						fs.readFile(path.join(__dirname, "translation_files", this._lang, "posts.json"), function(e, data) {
+							if(e)
+								rej(e);
+							else
+							{
+								try {
+									this._cachedPosts = Object.freeze(JSON.parse(data));
+
+									res(this);
+								} catch(e) {
+									rej(e);
+								}
+							}
+						}.bind(this));
 					} catch(e) {
 						rej(e);
 					}
@@ -470,6 +480,13 @@ utils.translation = class
 			itm.textContent = (typeof translate === "undefined" ? "unknown" : translate);
 			return Promise.resolve();
 		}.bind(this));
+	}
+	post(id)
+	{
+		if(verbose)
+			console.log("Translating post " + id);
+
+		return typeof this._cachedPosts[id] !== "string" ? (new Error("Can't find translate post for id" + id)) : this._cachedPosts[id];
 	}
 }
 /**
@@ -501,7 +518,7 @@ utils.patches = class
 				this.loadPatches().then(function() {
 					this.fetch(settings.get("first_repo")).then(function(urls) {
 						this.download(urls).then(res).catch(rej);
-					}.bind(this));
+					}.bind(this)).catch(res);
 				}.bind(this));
 			}.bind(this));
 		}.bind(this)).then(function() {
@@ -527,31 +544,31 @@ utils.patches = class
 	loadRepos()
 	{
 		return new Promise(function(res, rej) {
-			utils.rmkdir(path.join(__dirname, "patches"), function() {
-				fs.readdir(path.join(__dirname, "patches"), function(e, files) {
-					if(e)
-						rej(e);
-					else
-					{
-						utils.for(files, function(itm, key, i) {
-							return new Promise(function(_res, _rej) {
-								fs.readFile(path.join(__dirname, "patches", itm, "repo.json"), function(_e, data) {
-									if(_e)
-										_rej(_e);
-									else
-									{
-										try {
-											this._repos[itm] = JSON.parse(data);
-											_res();
-										} catch(__e) {
-											_rej(__e);
-										}
+			fs.readdir(path.join(__dirname, "patches"), function(e, files) {
+				if(e)
+					rej(e);
+				else
+				{
+					utils.for(files, function(itm, key, i) {
+						return new Promise(function(_res, _rej) {
+							fs.readFile(path.join(__dirname, "patches", itm, "repo.json"), function(_e, data) {
+								if(_e && _e.code != "ENOENT")
+									_rej(_e);
+								else if(_e)
+									_res();
+								else
+								{
+									try {
+										this._repos[itm] = JSON.parse(data);
+										_res();
+									} catch(__e) {
+										_rej(__e);
 									}
-								}.bind(this));
+								}
 							}.bind(this));
-						}.bind(this)).then(res).catch(rej);
-					}
-				}.bind(this));
+						}.bind(this));
+					}.bind(this)).then(res).catch(rej);
+				}
 			}.bind(this));
 		}.bind(this));
 	}
@@ -569,12 +586,12 @@ utils.patches = class
 					else
 					{
 						utils.for(files, function(itm, key, i) {
-							if(itm === "repo.json")
-								return Promise.resolve();
 							return new Promise(function(_res, _rej) {
 								fs.readFile(path.join(__dirname, "patches", name, itm, "patch.json"), function(_e, data) {
-									if(_e)
+									if(_e && _e.code != "ENOENT")
 										_rej(_e);
+									else if(_e)
+										_res();
 									else
 									{
 										try {
@@ -984,7 +1001,7 @@ utils.profiles = class
 			console.log("Selecting profile " + this._profiles[id].name);
 
 		if(id !== null)
-		this._selected = id;
+			this._selected = id;
 		this.refresh();
 	}
 	/**
@@ -1000,6 +1017,13 @@ utils.profiles = class
 		list.innerHTML = "";
 		for(let i in this._profiles[this._selected].patches)
 		{
+			if(!this._profiles[this._selected].patches[i])
+			{
+				delete this._profiles[this._selected].patches[i];
+				continue;
+			}
+			if(verbose)
+				console.log("Creating node for patch " + this._profiles[this._selected].patches[i]);
 			let patch = patches._patches[this._profiles[this._selected].patches[i]];
 			let name = document.createElement("div");
 			name.classList.add("patch-name");
@@ -1017,6 +1041,13 @@ utils.profiles = class
 		}
 		for(let i in this._profiles[this._selected].dependencies)
 		{
+			if(!this._profiles[this._selected].dependencies[i])
+			{
+				delete this._profiles[this._selected].dependencies[i];
+				continue;
+			}
+			if(verbose)
+				console.log("Creating node for dependency " + this._profiles[this._selected].dependencies[i]);
 			let patch = patches._patches[this._profiles[this._selected].dependencies[i]];
 			if(!this._profiles[this._selected].patches.includes(patch.id))
 			{
@@ -1039,6 +1070,7 @@ utils.profiles = class
 				list.appendChild(node);
 			}
 		}
+		this.save();
 	}
 	/**
 	 * [Need description]
@@ -1145,36 +1177,75 @@ utils.games = class
 {
 	/**
 	 * [Need description]
-	 * @todo
 	 */
 	constructor()
 	{
+		this._spawn = require('child_process').execFile;
 		this._games = {};
 		this._check = {};
+		this._running = false;
+
+		this._gameListDOM = document.querySelector(".games-tab .scrolling");
+		this._gameInfosDOM = document.querySelector(".game-details");
 
 		return new Promise(function(res, rej) {
-			this.getCheck().then(function() {
-				fs.readFile("games.json", function(e, data) {
-					if(e)
-						rej(e);
-					else
-					{
-						try {
-							this._games = Object.assign(this._games, JSON.parse(data));
-							utils.for(this._games, this.check).then(function() { res(this); }).catch(rej);
-						} catch(_e) {
-							rej(_e);
-						}
+			fs.readFile("check.json", function(e, data) {
+				if(e)
+					rej(e);
+				else
+				{
+					try {
+						if(data)
+							this._check = Object.assign(this._check, JSON.parse(data));
+
+						fs.readFile("games.json", function(e, data) {
+							if(e && e.code !== "ENOENT")
+								rej(e);
+							else
+							{
+								try {
+									let games = {};
+									if(data)
+										games = Object.assign(this._games, JSON.parse(data));
+									utils.for(games, this.check.bind(this)).then(function() { this.renderGames(); res(this); }.bind(this)).catch(rej);
+								} catch(_e) {
+									rej(_e);
+								}
+							}
+						}.bind(this));
+					} catch(_e) {
+						rej(_e);
 					}
-				}.bind(this));
+				}
 			}.bind(this));
 		}.bind(this));
 	}
-	getCheck()
+	/**
+	 * [Need description]
+	 */
+	renderGames()
 	{
-		return new Promise(function(res, rej) {
-			
-		});
+		for(let i in gameData)
+		{
+			let arr = [
+				utils.node("div", "game-title", [], "Touhou " + (i < 10 ? "0" + i : i) + " - " + gameData[i].jp),
+				utils.node("div", "game-version", [], this._games[i] && this._games[i][1] ? this._games[i][1] : "---"),
+				utils.node("div", "game-english", [], gameData[i].en)
+			];
+			if(!this._games[i] || !this._games[i].gamePath)
+				arr.push(utils.node("div", "game-warning", [utils.node("span", "warning-icon")], translation.translation("not-installed")));
+			else if(!this._games[i][1])
+				arr.push(utils.node("div", "game-warning", [utils.node("span", "warning-icon")], translation.translation("not-patchable")))
+			let node = utils.node("div", "game-scroll", utils.node("div", "game-infos", [
+				utils.node("span", "game-cover", [], null, {style: "background-image: url(img/" + i + ".jpg)"}),
+				utils.node("div", "game-data", arr)
+			]));
+			node.gameId = i;
+			node.addEventListener("click", function() {
+				games.select(this.gameId);
+			});
+			this._gameListDOM.appendChild(node);
+		}
 	}
 	/**
 	 * [Need description]
@@ -1185,14 +1256,14 @@ utils.games = class
 	check(game, id)
 	{
 		return new Promise(function(res, rej) {
-			fs.stat(game.gamePath, function(e, stat) {
+			fs.stat(game, function(e, stat) {
 				if(e)
 					rej(e);
 				if(stat.isFile() && this._check.sizes[stat.size])
 				{
-					utils.sha256(game.gamePath).then(function(sha) {
+					utils.sha256(game).then(function(sha) {
 						let data = this._check.hashes[sha];
-						this._games[id] = Object.assign(game, data);
+						this._games[id] = Object.assign({}, data, {"gamePath": game});
 						res();
 					}.bind(this));
 				}
@@ -1203,12 +1274,67 @@ utils.games = class
 	}
 	/**
 	 * [Need description]
-	 * @param {string} path [Need description]
+	 * @param {string} dir [Need description]
 	 * @todo
 	 */
-	search(path)
+	search(dir)
 	{
+		/*var games = [], dlList = [];
+		var v = {};
+		var loop = function(path)
+		{
+			return new Promise(function(res, rej) {
+				fs.lstat(path, function(err, s) {
+					if(err)
+						res();
+					else if(s.isDirectory())
+					{
+						fs.readdir(path, function(e, f) {
+							if(!e)
+							{
+								for(i in f)
+									f[i] = path.join(path.substr(path.length), f[i]);
+								Array.prototype.push.apply(dl, f);
+							}
+							res();
+						});
+					}
+					else if(s.isFile())
+					{
+						if(path.extname(path) === ".exe" && Object.keys(v.sizes).includes(s.size.toString()))
+						{
+							utils.sha256(path).then(function(sha) {
+								if(Object.keys(v.hashes).includes(hash.digest('hex')))
+									games.push(path);
+								res();
+							}.bind(this));
+							const hash = crypto.createHash('sha256');
 
+							const input = fs.createReadStream(path);
+							input.on('readable', () => {
+								const data = input.read();
+								if (data)
+									hash.update(data);
+								else
+								{
+								}
+							});
+						}
+						else
+							res();
+					}
+					else
+						res();
+				});
+			}).then(function() {
+				dlList.splice(0, 1);
+				if(dlList.length !== 0 && global_vars.stopped === false)
+					loop(path.join(path, dlList[0]));
+				else
+					_callback(games);
+			});
+		};
+		return loop(dir).then();*/
 	}
 	/**
 	 * [Need description]
@@ -1217,16 +1343,146 @@ utils.games = class
 	 */
 	select(id)
 	{
-
+		this._gameInfosDOM.gameId = id;
+		let background = this._gameInfosDOM.children[0];
+		background.style["background-image"] = "url(img/" + id + "gameplay.jpg)";
+		background.children[0].textContent = "Touhou " + id;
+		let wrapper = this._gameInfosDOM.children[1];
+		wrapper.children[0].textContent = translation.post(id);
+		let buttons = wrapper.querySelectorAll(".button-wrapper > button");
+		for(let i of buttons)
+			i.gameId = id;
 	}
 	/**
 	 * [Need description]
 	 * @param {string} file [Need description]
 	 * @param {string} id   [Need description]
+	 * @todo
 	 */
 	conflict(file, id)
 	{
 
+	}
+	/**
+	 * [Need description]
+	 * @return {Promise} Promise resolved when the save is completed
+	 */
+	save()
+	{
+		let saved = {};
+		for(let i in this._games)
+			saved[i] = this._games[i].gamePath;
+		return new Promise(function(res, rej) {
+			fs.writeFile(path.join(__dirname, "games.json"), JSON.stringify(saved), function(e) {
+				if(e)
+					rej(e);
+				else
+					res();
+			});
+		});
+	}
+	/**
+	 * Run a game. Can run both vanilla and patched game, using the selected profile.
+	 * @param  {string} game 	 Id of the game
+	 * @param  {boolean} vanilla If the game running vanilla or with patchs
+	 * @return {Promise}		 Promise resolved when the game is closed
+	 */
+	launch(game, vanilla)
+	{
+		if(this._running)
+			return Promise.reject(translation.translation("already-running"));
+		if(!this._games[game] || !this._games[game].gamePath)
+			return Promise.reject(translation.translation("not-installed"));
+		let child;
+		if(vanilla)
+		{
+			child = this._spawn(this._games[game].gamePath, [], {cwd: path.dirname(this._games[game].gamePath)});
+
+			this._running = true;
+			win.minimize();
+
+			if(verbose)
+			{
+				child.stdout.on('data', (data) => {
+					console.log(`stdout: ${data}`);
+				});
+
+				child.stderr.on('data', (data) => {
+					console.log(`stderr: ${data}`);
+				});
+			}
+
+			return new Promise(function(res, rej) {
+				child.on('close', function(code) {
+					if(verbose)
+						console.log("Child process exited with code " + code);
+
+					this._running = false;
+					win.restore();
+					res();
+				}.bind(this));
+			}.bind(this));
+		}
+		else
+		{
+			if(profiles._selected === null)
+				return Promise.reject(translation.translation("no-profile"));
+			else
+			{
+				let obj = {
+					"console": settings.get("console"),
+					"dat_dump": settings.get("dat_dump"),
+					"patches": []
+				};
+				for(let i in profiles._profiles[profiles._selected].dependencies)
+				{
+					let depen = profiles._profiles[profiles._selected].dependencies[i];
+					if(depen && !profiles._profiles[profiles._selected].patches.includes(depen))
+						obj.patches.push({"archive": patches._patches[depen].repo + "/" + depen + "/"});
+				}
+				for(let i in profiles._profiles[profiles._selected].patches)
+				{
+					let patch = profiles._profiles[profiles._selected].patches[i];
+					if(patch)
+						obj.patches.push({"archive": patches._patches[patch].repo + "/" + patch + "/"});
+				}
+				return new Promise(function(res, rej) {
+					fs.writeFile(path.join(__dirname, "patches", "launch.js"), JSON.stringify(obj), function(e) {
+						if(e)
+							rej(e);
+						else
+						{
+							profiles.download().then(function() {
+								child = this._spawn(path.join(__dirname, "patches",  "thcrap_loader.exe"), ["launch.js", this._games[game].gamePath], {cwd: path.join(__dirname, "patches")});
+
+								this._running = true;
+								win.minimize();
+
+								if(verbose)
+								{
+									child.stdout.on('data', (data) => {
+										console.log(`stdout: ${data}`);
+									});
+
+									child.stderr.on('data', (data) => {
+										console.log(`stderr: ${data}`);
+									});
+								}
+
+								child.on('close', function(code) {
+									if(verbose)
+										console.log("Child process exited with code " + code);
+
+									this._running = false;
+									win.restore();
+									res();
+								}.bind(this));
+							}).catch(rej);
+						}
+					}.bind(this))
+				}.bind(this));
+			}
+		}
 	}
 }
 utils.popup = class
@@ -1264,6 +1520,9 @@ utils.popup = class
 			}
 			this.main = utils.node("div", "background-container", utils.node("div", "foreground-popup", arr));
 			document.body.appendChild(this.main);
+
+			if(verbose)
+				console.log("Spawning a new popup");
 		}.bind(this));
 	}
 	close()
