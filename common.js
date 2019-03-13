@@ -6,6 +6,7 @@
 "use strict";
 
 const remote = require('electron').remote;
+const dialog = require('electron').dialog;
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -321,6 +322,7 @@ utils.node = function(tag, classes, childrens, text, attributes)
 			node.setAttribute(i, attributes[i]);
 	return node;
 };
+
 
 
 /**
@@ -1335,6 +1337,7 @@ utils.games = class
 			});
 		};
 		return loop(dir).then();*/
+		console.log(dir);
 	}
 	/**
 	 * [Need description]
@@ -1352,6 +1355,7 @@ utils.games = class
 		let buttons = wrapper.querySelectorAll(".button-wrapper > button");
 		for(let i of buttons)
 			i.gameId = id;
+		wrapper.querySelector(".more-wrapper").classList.remove("toggled");
 	}
 	/**
 	 * [Need description]
@@ -1489,8 +1493,8 @@ utils.popup = class
 {
 	/**
 	 * Create a popup and append the given nodes inside
-	 * @param  {Array|Node} node Appended nodes
 	 * @param  {string} title    Title of the popup
+	 * @param  {Array|Node} node Appended nodes
 	 */
 	constructor(title, node)
 	{

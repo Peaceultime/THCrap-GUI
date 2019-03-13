@@ -45,12 +45,17 @@
 							<button trid="run-patched" class="patched-button"></button>
 							<div class="more-button-wrapper">
 								<button trid="profile-button" onclick="profiles.display().then((profile) => {profiles.select(profile)}).catch(() => {return});"></button>
-								<div class="more-button">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
-										<circle cx="12" cy="8" r="2" fill="#DFDFDF"></circle>
-										<circle cx="12" cy="16" r="2" fill="#DFDFDF"></circle>
-										<circle cx="12" cy="24" r="2" fill="#DFDFDF"></circle>
-									</svg>
+								<div class="more-container">
+									<button class="more-button">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
+											<circle cx="12" cy="8" r="2" fill="#DFDFDF"></circle>
+											<circle cx="12" cy="16" r="2" fill="#DFDFDF"></circle>
+											<circle cx="12" cy="24" r="2" fill="#DFDFDF"></circle>
+										</svg>
+									</button>
+									<div class="more-wrapper">
+										<button class="search-button" trid="search-games" onclick="dialog.showOpenDialog(win, {properties: ['openDirectory']}, games.search);"></button>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -84,12 +89,14 @@
 						<button class="more-infos-button" trid="more-infos-button" onclick="if(patches && patches._selectedPatch) shell.openExternal('https://www.thpatch.net/wiki/Patch:' + patches._selectedPatch);"></button>
 						<div class="more-button-wrapper">
 							<button class="profile-button" trid="profile-button" onclick="profiles.display().then((profile) => {profiles.select(profile)}).catch(() => {return});"></button>
-							<div class="more-button">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
-									<circle cx="12" cy="8" r="2" fill="#DFDFDF"></circle>
-									<circle cx="12" cy="16" r="2" fill="#DFDFDF"></circle>
-									<circle cx="12" cy="24" r="2" fill="#DFDFDF"></circle>
-								</svg>
+							<div class="more-container">
+								<button class="more-button">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32">
+										<circle cx="12" cy="8" r="2" fill="#DFDFDF"></circle>
+										<circle cx="12" cy="16" r="2" fill="#DFDFDF"></circle>
+										<circle cx="12" cy="24" r="2" fill="#DFDFDF"></circle>
+									</svg>
+								</button>
 							</div>
 						</div>
 					</div>

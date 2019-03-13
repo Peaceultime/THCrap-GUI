@@ -20,7 +20,6 @@ html, body, div, header, button {
 	-webkit-user-select: none;
 	color: var(--white-color);
 	font-family: "Segoe UI Light";
-	overflow: hidden;
 	outline: none;
 }
 
@@ -228,7 +227,7 @@ html, body, div, header, button {
 	align-items: center;
 }
 
-.button-wrapper > button, .more-button-wrapper {
+.button-wrapper > button, .more-button-wrapper, .more-button {
 	flex: 1;
 	margin: 12px;
 	height: 40px;
@@ -236,11 +235,11 @@ html, body, div, header, button {
 	cursor: pointer;
 }
 
-.button-wrapper button:hover, .more-button:hover {
+.button-wrapper > button:hover, .more-button-wrapper > button:hover, .more-button:hover {
 	background-color: var(--background-color);
 }
 
-.more-button-wrapper button {
+.more-button-wrapper > button {
 	flex: 1;
 	background-color: var(--dark-color);
 	border-right: 1px solid var(--alt-color);
@@ -251,11 +250,17 @@ html, body, div, header, button {
 	display: flex;
 }
 
-.more-button {
+.more-container {
 	width: 32px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	position: relative;
+}
+
+.more-button
+{
+	margin: 0;
 }
 
 .tab-container.patchs-tab .scrolling {
@@ -348,9 +353,11 @@ html, body, div, header, button {
 	font-size: 0.7em;
 }
 
-.selected-patch-title {
+.selected-patch-title
+{
 	font-size: 1.6em;
-}.background-container
+}
+.background-container
 {
 	display: flex;
 	justify-content: center;
@@ -509,4 +516,43 @@ html, body, div, header, button {
     to {
         transform: rotate(360deg);
     }
+}
+.more-wrapper
+{
+	position: absolute;
+	right: 0;
+	bottom: 48px;
+	width: 160px;
+	background-color: var(--background-color);
+	flex-direction: column;
+
+	transform: scale(0);
+	transform-origin: 144px 48px;
+	transition: transform .5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.more-wrapper.toggled
+{
+	display: flex;
+	transform: scale(1);
+}
+.more-wrapper::after
+{
+	content: "";
+	border: 8px solid transparent;
+	border-top-color: var(--background-color);
+	position: absolute;
+	bottom: -16px;
+	right: 8px;
+	display: block;
+}
+.more-wrapper > button
+{
+	flex: 1;
+	height: 40px;
+	background-color: var(--background-color);
+	cursor: pointer;
+}
+.more-wrapper > button:hover
+{
+	background-color: var(--dark-color);
 }

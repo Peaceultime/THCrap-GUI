@@ -12,6 +12,10 @@ window.addEventListener("DOMContentLoaded", function() {
 			translation.translate().catch(function(e) {
 				console.error(e);
 			});
+			
+			new utils.games().then(function(data) {
+				games = data;
+			});
 		});
 		new utils.patches().then(function(data) {
 			patches = data;
@@ -20,9 +24,6 @@ window.addEventListener("DOMContentLoaded", function() {
 	});
 	new utils.profiles().then(function(data) {
 		profiles = data;
-	});
-	new utils.games().then(function(data) {
-		games = data;
 	});
 });
 
@@ -73,6 +74,18 @@ window.addEventListener("load", function() {
 		}.bind(this));
 		this.textContent = translation.translation('game-launched');
 	});
+
+	for(let i of document.querySelectorAll(".more-button"))
+		i.addEventListener("click", function() {
+			let node = this.parentNode.querySelector(".more-wrapper");
+			if(node)
+				node.classList.toggle("toggled");
+		});
+
+	for(let i of document.querySelectorAll(".more-wrapper > button"))
+		i.addEventListener("click", function() {
+			this.parentNode.classList.remove("toggled");
+		});
 
 	document.querySelector(".close-app").addEventListener("click", function() {
 		win.close();

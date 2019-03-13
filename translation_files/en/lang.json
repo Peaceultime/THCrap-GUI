@@ -26,5 +26,6 @@
 	"not-patchable": "The selected game isn't patchable",
 	"already-running": "A game is already running",
 	"no-profile": "No profile selected",
-	"game-launched": "The game is running"
+	"game-launched": "The game is running",
+	"search-games": "Search for games"
 }
