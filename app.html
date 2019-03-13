@@ -54,7 +54,7 @@
 										</svg>
 									</button>
 									<div class="more-wrapper">
-										<button class="search-button" trid="search-games" onclick="dialog.showOpenDialog(win, {properties: ['openDirectory']}, games.search);"></button>
+										<button class="search-button" trid="search-games" onclick="dialog.showOpenDialog(win, {properties: ['openDirectory']}, function(dir) { games.search(dir).then(console.log) } );"></button>
 									</div>
 								</div>
 							</div>

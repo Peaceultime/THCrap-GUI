@@ -5,8 +5,8 @@
  */
 "use strict";
 
-const remote = require('electron').remote;
-const dialog = require('electron').dialog;
+const { remote } = require('electron');
+const dialog = remote.dialog;
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -1281,63 +1281,60 @@ utils.games = class
 	 */
 	search(dir)
 	{
-		/*var games = [], dlList = [];
-		var v = {};
-		var loop = function(path)
-		{
-			return new Promise(function(res, rej) {
-				fs.lstat(path, function(err, s) {
-					if(err)
-						res();
-					else if(s.isDirectory())
-					{
-						fs.readdir(path, function(e, f) {
-							if(!e)
-							{
-								for(i in f)
-									f[i] = path.join(path.substr(path.length), f[i]);
-								Array.prototype.push.apply(dl, f);
-							}
-							res();
-						});
-					}
-					else if(s.isFile())
-					{
-						if(path.extname(path) === ".exe" && Object.keys(v.sizes).includes(s.size.toString()))
-						{
-							utils.sha256(path).then(function(sha) {
-								if(Object.keys(v.hashes).includes(hash.digest('hex')))
-									games.push(path);
-								res();
-							}.bind(this));
-							const hash = crypto.createHash('sha256');
+		if(!dir && !dir.length)
+			return Promise.reject();
 
-							const input = fs.createReadStream(path);
-							input.on('readable', () => {
-								const data = input.read();
-								if (data)
-									hash.update(data);
-								else
-								{
-								}
+		var list = {};
+		var fetch = dir;
+
+		console.log(this._check);
+
+		return new Promise(function(res, rej) {
+			var loop = function(file)
+			{
+				new Promise(function(_res, _rej) {
+					fs.lstat(file, function(e, stat) {
+						if(e)
+							_res();
+						else if(stat.isDirectory())
+						{
+							fs.readdir(file, function(_e, files) {
+								if(!_e)
+									for(let i in files)
+										fetch.push(path.join(file, files[i]));
+								_res();
 							});
 						}
+						else if(stat.isFile())
+						{
+							if(path.extname(file) === ".exe" && this._check.sizes[stat.size])
+							{
+								utils.sha256(file).then(function(sha) {
+									if(this._check.hashes[sha])
+									{
+										if(!list[this._check.hashes[sha][0]])
+											list[this._check.hashes[sha][0]] = [];
+										list[this._check.hashes[sha][0]].push(file);
+									}
+									_res();
+								}.bind(this));
+							}
+							else
+								_res();
+						}
 						else
-							res();
-					}
+							_res();
+					}.bind(this));
+				}.bind(this)).then(function() {
+					fetch.splice(0, 1);
+					if(fetch.length)
+						loop.bind(this)(fetch[0]);
 					else
-						res();
-				});
-			}).then(function() {
-				dlList.splice(0, 1);
-				if(dlList.length !== 0 && global_vars.stopped === false)
-					loop(path.join(path, dlList[0]));
-				else
-					_callback(games);
-			});
-		};
-		return loop(dir).then();*/
-		console.log(dir);
+						res(list);
+				}.bind(this)).catch(rej);
+			}
+			loop.bind(this)(fetch[0]);
+		}.bind(this));
 	}
 	/**
 	 * [Need description]
