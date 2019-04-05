@@ -781,38 +781,85 @@ utils.patches = class
 	}
 	/**
 	 * [Need description]
-	 * @param {string} patch [Need description]
-	 * @return {Array}       [Need description]
+	 * @param {string} id [Need description]
+	 * @return {Array}    [Need description]
 	 */
-	dependencies(patch)
+	dependencies(id)
 	{
-		if(this._patches[patch])
+		let patch = this._patches[id];
+		if(patch && patch.dependencies)
 		{
-			let check = [], dependencies = [];
-			for(let i in this._patches[patch].dependencies)
+			let dependencies = [];
+			for(let i of patch.dependencies)
 			{
-				if(this._patches[patch].dependencies[i].includes("/"))
-					check.push(this._patches[patch].dependencies[i].split("/")[1]);
-				else
-					check.push(this._patches[patch].dependencies[i]);
-			}
-			while(check.length != 0)
-			{
-				for(let i in this._patches[check[0]].dependencies)
-				{
-					patch = this._patches[check[0]].dependencies[i];
-					if(!check.includes(patch) && !dependencies.includes(patch))
-					{
-						check.push(patch.split("/")[1]);
-					}
-				}
-				if(!dependencies.includes(check[0]))
-					dependencies.push(check[0]);
-				check.splice(0, 1);
+				let j = i.split('/');
+				if(j.length > 1)
+					i = j[1];
+				let d = this.dependencies(i);
+				d.push(i);
+				Array.prototype.push.apply(dependencies, d);
 			}
 			return dependencies;
 		}
 		return [];
+	}
+	/**
+	 * Download files.js for the given patch if it don't already exists and return the parsed content
+	 * @param {string} id 
+	 * @return {Promise} Promise resolved when the download is finished
+	 */
+	summary(id)
+	{
+		let patch = this._patches[id];
+		return new Promise(function(res, rej) {
+			fs.readFile(path.join(__dirname, "patches", patch.repo, id), function(e, data) {
+				if(e && e.code != "ENOENT")
+					rej(e);
+				else if(e)
+				{
+					utils.get(patch.servers[0] + "/files.js").then(function(d) {
+						try {
+							res(JSON.parse(d.body));
+						} catch(_e) { rej(_e); }
+					}).catch(rej);
+				}
+				else
+				{
+					try {
+						res(JSON.parse(data));
+					} catch(_e) { rej(_e); }
+				}
+			});
+		});
+	}
+	/**
+	 * 
+	 */
+	create(id)
+	{
+		let patch = this._patches[id];
+		if(!patch)
+			return Promise.reject();
+		this.summary(id).then(function(data) {
+			utils.for(data, function(item, key) {
+				return new Promise(function(res, rej) {
+					let dir = path.join(__dirname, "patches", patch.repo, patch.id, key);
+					utils.rmkdir(dir, function() {
+						fs.open(dir, 'a', function(e, fd) {
+							if(e)
+								rej(e);
+							else
+								fs.close(fd, function(_e) {
+									if(_e)
+										rej(_e);
+									else
+										res();
+								});
+						});
+					});
+				});
+			});
+		});
 	}
 }
 /**
@@ -1170,6 +1217,15 @@ utils.profiles = class
 					utils.node("div", "popup-buttons-wrapper", [select, add, rename, remove])]);
 		}.bind(this));
 	}
+	/**
+	 * @return {Promise} Promise resolved when everything is created
+	 */
+	create()
+	{
+		return utils.for(this._profiles[this._selected], function(item, key) {
+			patches.create(item);
+		});
+	}
 }
 /**
  * Games class, contain all games data, like name, version and path
@@ -1286,8 +1342,6 @@ utils.games = class
 
 		var list = {};
 		var fetch = dir;
-
-		console.log(this._check);
 
 		return new Promise(function(res, rej) {
 			var loop = function(file)
@@ -1453,7 +1507,7 @@ utils.games = class
 							rej(e);
 						else
 						{
-							profiles.download().then(function() {
+							profiles.create().then(function() {
 								child = this._spawn(path.join(__dirname, "patches",  "thcrap_loader.exe"), ["launch.js", this._games[game].gamePath], {cwd: path.join(__dirname, "patches")});
 
 								this._running = true;
