@@ -59,7 +59,7 @@ utils.rmkdir = function(dest, callback)
  * @param  {string} url    Fetched URL
  * @param  {string} method Request method, GET by default
  * @return {Promise}       Promise resolve on server response
- *         @param {IncomingMessage} resp IncomingMessage object coming from the server
+ *         @param {IncomingMessage} IncomingMessage object coming from the server
  */
 utils.request = function(url, method)
 {
@@ -83,7 +83,14 @@ utils.request = function(url, method)
 		if(url.protocol == "https:")
 		{
 			https.request(request, function(resp) {
-				res({"resp": resp});
+				if(resp.statusCode > 300 && resp.statusCode < 400 && resp.headers.location)
+				{
+					if(verbose)
+						console.log("HTTPS Code " + resp.statusCode + ": Redirection");
+					utils.request(resp.headers.location, method).then(res).catch(rej);
+				}
+				else
+					res(resp);
 			}).on("error", function(e) {
 				rej(e);
 			}).end();
@@ -91,7 +98,14 @@ utils.request = function(url, method)
 		else if(url.protocol == "http:")
 		{
 			http.request(request, function(resp) {
-				res({"resp": resp});
+				if (resp.statusCode > 300 && resp.statusCode < 400 && resp.headers.location)
+				{
+					if(verbose)
+						console.log("HTTP Code " + resp.statusCode + ": Redirection");
+					utils.request(resp.headers.location, method).then(res).catch(rej);
+				}
+				else
+					res(resp);
 			}).on("error", function(e) {
 				rej(e)
 			}).end();
@@ -120,8 +134,8 @@ utils.download = function(url, dest)
 						console.log("Starting to save " + url + " in " + (path.isAbsolute(dest) ? dest : path.join(__dirname, dest)));
 
 					let write = fs.createWriteStream(dest);
-					then.resp.pipe(write);
-					then.resp.on("end", function() {
+					then.pipe(write);
+					then.on("end", function() {
 						res();
 					}).on("error", function(e) {
 						rej(e);
@@ -140,7 +154,7 @@ utils.download = function(url, dest)
 utils.sizeof = function(url)
 {
 	return utils.request(url, "HEAD").then(function(then) {
-		return Promise.resolve({"size": then.resp.headers["content-length"]});
+		return Promise.resolve({"size": then.headers["content-length"]});
 	});
 };
 /**
@@ -159,14 +173,14 @@ utils.get = function(url, headers)
 			if(verbose)
 				console.log("Start getting data");
 
-			then.resp.setEncoding("utf8");
-			then.resp.on("data", function(data) {
+			then.setEncoding("utf8");
+			then.on("data", function(data) {
 				body += data;
 			});
-			then.resp.on("end", function() {
-				res({"body": body, "headers": (headers ? then.resp.headers : undefined)});
+			then.on("end", function() {
+				res({"body": body, "headers": (headers ? then.headers : undefined)});
 			});
-			then.resp.on("error", function(e) {
+			then.on("error", function(e) {
 				rej(e);
 			});
 		});
@@ -787,9 +801,9 @@ utils.patches = class
 	dependencies(id)
 	{
 		let patch = this._patches[id];
+		let dependencies = [];
 		if(patch && patch.dependencies)
 		{
-			let dependencies = [];
 			for(let i of patch.dependencies)
 			{
 				let j = i.split('/');
@@ -799,28 +813,34 @@ utils.patches = class
 				d.push(i);
 				Array.prototype.push.apply(dependencies, d);
 			}
-			return dependencies;
 		}
-		return [];
+		return dependencies;
 	}
 	/**
 	 * Download files.js for the given patch if it don't already exists and return the parsed content
-	 * @param {string} id 
+	 * @param {string} id
 	 * @return {Promise} Promise resolved when the download is finished
 	 */
 	summary(id)
 	{
 		let patch = this._patches[id];
 		return new Promise(function(res, rej) {
-			fs.readFile(path.join(__dirname, "patches", patch.repo, id), function(e, data) {
+			fs.readFile(path.join(__dirname, "patches", patch.repo, id, "files.js"), function(e, data) {
 				if(e && e.code != "ENOENT")
 					rej(e);
 				else if(e)
 				{
 					utils.get(patch.servers[0] + "/files.js").then(function(d) {
-						try {
-							res(JSON.parse(d.body));
-						} catch(_e) { rej(_e); }
+							try {
+								let data = JSON.parse(d.body);
+
+								fs.writeFile(path.join(__dirname, "patches", patch.repo, id, "files.js"), d.body, function(_e) {
+									if(_e)
+										rej(_e);
+									else
+										res(data);
+								});
+							} catch(_e) { rej(_e); }
 					}).catch(rej);
 				}
 				else
@@ -833,18 +853,18 @@ utils.patches = class
 		});
 	}
 	/**
-	 * 
+	 *
 	 */
 	create(id)
 	{
 		let patch = this._patches[id];
 		if(!patch)
 			return Promise.reject();
-		this.summary(id).then(function(data) {
-			utils.for(data, function(item, key) {
+		return this.summary(id).then(function(data) {
+			return utils.for(data, function(item, key) {
 				return new Promise(function(res, rej) {
 					let dir = path.join(__dirname, "patches", patch.repo, patch.id, key);
-					utils.rmkdir(dir, function() {
+					utils.rmkdir(path.dirname(dir), function() {
 						fs.open(dir, 'a', function(e, fd) {
 							if(e)
 								rej(e);
@@ -856,6 +876,7 @@ utils.patches = class
 										res();
 								});
 						});
+						//Downloads goes here
 					});
 				});
 			});
@@ -1222,8 +1243,13 @@ utils.profiles = class
 	 */
 	create()
 	{
-		return utils.for(this._profiles[this._selected], function(item, key) {
-			patches.create(item);
+		let profile = this._profiles[this._selected];
+		return utils.for(profile.patches, function(item, key) {
+			return patches.create(item);
+		}).then(function() {
+			return utils.for(profile.dependencies, function(item, key) {
+				return patches.create(item);
+			});
 		});
 	}
 }
@@ -1532,7 +1558,7 @@ utils.games = class
 									win.restore();
 									res();
 								}.bind(this));
-							}).catch(rej);
+							}.bind(this)).catch(rej);
 						}
 					}.bind(this))
 				}.bind(this));

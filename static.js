@@ -13,7 +13,7 @@ const gameData = {
 };
 const defaultSettings = {
 	"lang": "en",
-	"first_repo": "http://thcrap.nmlgc.net/repos/nmlgc/",
+	"first_repo": "https://mirrors.thpatch.net/nmlgc/",
 	"console": false,
 	"dat_dump": false
 };

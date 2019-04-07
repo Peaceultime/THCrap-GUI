@@ -12,7 +12,7 @@ window.addEventListener("DOMContentLoaded", function() {
 			translation.translate().catch(function(e) {
 				console.error(e);
 			});
-			
+
 			new utils.games().then(function(data) {
 				games = data;
 			});
@@ -55,6 +55,7 @@ window.addEventListener("load", function() {
 		games.launch(this.gameId, true).then(function() {
 			this.textContent = translation.translation(this.getAttribute('trid'))
 		}.bind(this)).catch(function(e) {
+			console.error(e);
 			this.textContent = e;
 			setTimeout(function() {
 				this.textContent = translation.translation(this.getAttribute('trid'))
@@ -67,6 +68,7 @@ window.addEventListener("load", function() {
 		games.launch(this.gameId, false).then(function() {
 			this.textContent = translation.translation(this.getAttribute('trid'))
 		}.bind(this)).catch(function(e) {
+			console.error(e);
 			this.textContent = e;
 			setTimeout(function() {
 				this.textContent = translation.translation(this.getAttribute('trid'))
