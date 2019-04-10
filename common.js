@@ -15,7 +15,7 @@ const URL = require('url');
 const crypto = require("crypto");
 
 var win = remote.getCurrentWindow();
-const verbose = true;
+const verbose = false;
 
 const updateServers = ["https://aspect-code.net/touhouproject/download/thcrap/"];
 
@@ -47,7 +47,7 @@ utils.rmkdir = function(dest, callback)
 			});
 		else
 		{
-			if(verbose)
+			if(verbose && !err)
 				console.log("Creating " + dest);
 
 			callback();
@@ -87,6 +87,7 @@ utils.request = function(url, method)
 				{
 					if(verbose)
 						console.log("HTTPS Code " + resp.statusCode + ": Redirection");
+
 					utils.request(resp.headers.location, method).then(res).catch(rej);
 				}
 				else
@@ -102,6 +103,7 @@ utils.request = function(url, method)
 				{
 					if(verbose)
 						console.log("HTTP Code " + resp.statusCode + ": Redirection");
+
 					utils.request(resp.headers.location, method).then(res).catch(rej);
 				}
 				else
@@ -645,13 +647,15 @@ utils.patches = class
 					return Promise.reject(e);
 				}
 
+				//Create the patch if it don't exists
 				this._repos[data.id] = Object.assign({}, this._repos[data.id]);
 
 				let patches = {};
 				for(let i in data.patches)
-					if(!this._repos[data.id].patches || !this._repos[data.id].patches[i])
+					if(!this._repos[data.id].patches || !this._repos[data.id].patches[i] || !this._patches[i])
 						patches[i] = fetch[0] + "/" + i;
 
+				//Merge the repo data with the downloaded data
 				this._repos[data.id] = Object.assign(this._repos[data.id], data);
 
 				repos[data.id] = patches;
@@ -855,28 +859,30 @@ utils.patches = class
 	/**
 	 *
 	 */
-	create(id)
+	create(id, filter)
 	{
 		let patch = this._patches[id];
 		if(!patch)
 			return Promise.reject();
 		return this.summary(id).then(function(data) {
 			return utils.for(data, function(item, key) {
+				if(!filter(item, key))
+					return Promise.resolve();
 				return new Promise(function(res, rej) {
 					let dir = path.join(__dirname, "patches", patch.repo, patch.id, key);
 					utils.rmkdir(path.dirname(dir), function() {
-						fs.open(dir, 'a', function(e, fd) {
-							if(e)
+						fs.lstat(dir, function(e, s) {
+							if(e && e.code != "ENOENT")
 								rej(e);
 							else
-								fs.close(fd, function(_e) {
-									if(_e)
-										rej(_e);
-									else
-										res();
-								});
+							{
+								let download = true;
+								if(s && s.size == item)
+									download = false;
+								if(download)
+									utils.download(patch.servers[0] + "/" + key, dir).then(res).catch(rej);
+							}
 						});
-						//Downloads goes here
 					});
 				});
 			});
@@ -1239,16 +1245,18 @@ utils.profiles = class
 		}.bind(this));
 	}
 	/**
-	 * @return {Promise} Promise resolved when everything is created
+	 * Download all data for the selected profile.
+	 * @param {Function} filter Function used to filter the patch files
+	 * @return {Promise}        Promise resolved when everything is created
 	 */
-	create()
+	create(filter)
 	{
 		let profile = this._profiles[this._selected];
 		return utils.for(profile.patches, function(item, key) {
-			return patches.create(item);
+			return patches.create(item, filter);
 		}).then(function() {
 			return utils.for(profile.dependencies, function(item, key) {
-				return patches.create(item);
+				return patches.create(item, filter);
 			});
 		});
 	}
@@ -1533,7 +1541,9 @@ utils.games = class
 							rej(e);
 						else
 						{
-							profiles.create().then(function() {
+							profiles.create(function(item, key) {
+								return path.dirname(key) == '.' || key.startsWith(gameData[game].nb);
+							}).then(function() {
 								child = this._spawn(path.join(__dirname, "patches",  "thcrap_loader.exe"), ["launch.js", this._games[game].gamePath], {cwd: path.join(__dirname, "patches")});
 
 								this._running = true;
