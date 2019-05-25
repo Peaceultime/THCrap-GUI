@@ -1320,7 +1320,7 @@ utils.games = class
 		for(let i in gameData)
 		{
 			let arr = [
-				utils.node("div", "game-title", [], "Touhou " + (i < 10 ? "0" + i : i) + " - " + gameData[i].jp),
+				utils.node("div", "game-title", [], gameData[i].title + " - " + gameData[i].jp),
 				utils.node("div", "game-version", [], this._games[i] && this._games[i][1] ? this._games[i][1] : "---"),
 				utils.node("div", "game-english", [], gameData[i].en)
 			];
@@ -1434,7 +1434,7 @@ utils.games = class
 		this._gameInfosDOM.gameId = id;
 		let background = this._gameInfosDOM.children[0];
 		background.style["background-image"] = "url(img/" + id + "gameplay.jpg)";
-		background.children[0].textContent = "Touhou " + id;
+		background.children[0].textContent = gameData[id].title;
 		let wrapper = this._gameInfosDOM.children[1];
 		wrapper.children[0].textContent = translation.post(id);
 		let buttons = wrapper.querySelectorAll(".button-wrapper > button");
@@ -1450,7 +1450,7 @@ utils.games = class
 	 */
 	conflict(file, id)
 	{
-
+		
 	}
 	/**
 	 * [Need description]
