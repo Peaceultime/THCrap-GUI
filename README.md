@@ -6,7 +6,7 @@ games.
 
 ## Contributions
 You can contribute to the development of this software by adding features from the original
-software. This software is fully translatable, you can refer to the `translation_files/README.md` to get more
+software. This software is fully translatable, you can refer to the `src/i18n/README.md` to get more
 informations about the software translation process.
 
 ## Tests
