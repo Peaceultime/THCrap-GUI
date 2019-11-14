@@ -6,8 +6,7 @@ games.
 
 ## Contributions
 You can contribute to the development of this software by adding features from the original
-software. You can also work on the design of the application by editing the Adobe XD design project.
-This software is fully translatable, you can refer to the `translation_files/README.md` to get more
+software. This software is fully translatable, you can refer to the `translation_files/README.md` to get more
 informations about the software translation process.
 
 ## Tests
@@ -17,3 +16,4 @@ Tests will be add later to the project. The priority tests are the translations 
 * Add all the features from the previous rework (in `master` branch).
 * Add a changelog for the updates.
 * Add tests
+* Fork THCRAP to make it a Node module
