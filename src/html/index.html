@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Touhou Community Reliant Automatic Patcher</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" type="text/css" href="css/style-updater.css">
+		<script type="text/javascript" src="script/common.js"></script>
+		<script type="text/javascript" src="script/index.js"></script>
+	</head>
+	<body>
+		<header class="app-header">
+			<div class="app-title">Touhou Community Reliant Automatic Patcher</div>
+			<div class="close-app" onclick="exit()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18"><path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"/></svg></div>
+		</header>
+		<div class="app-container">
+			<div class="infos">
+				<img class="app-logo" src="img/logo.png">
+				<div class="task-description" id="task-description"></div>
+			</div>
+			<div class="loading" id="loading">
+				<div class="loader"></div>
+			</div>
+			<div class="buttons">
+				<button class="retry" trid="retry" onclick="retry()"></button>
+				<button class="offline" trid="go-offline" onclick="offline()"></button>
+			</div>
+		</div>
+	</body>
+</html>

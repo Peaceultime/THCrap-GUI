@@ -1,7 +1,5 @@
 node_modules
-patches
+src/thcrap
 package.json
 package-lock.json
-settings.json
-profiles.json
-games.json
+data
