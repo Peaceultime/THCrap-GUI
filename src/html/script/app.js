@@ -14,7 +14,6 @@ let searchButton, downloadPopup, downloadedPatch;
 
 /**
  * Can't release without all these components
- * @todo PatchListPopup in edit mode [Priority 8]
  * @todo Determine settings UI [Priority 8]
  * @todo Settings Popup [Priority 7]
  * @todo Fix patch loading [Priority max]

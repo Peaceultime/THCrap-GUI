@@ -657,3 +657,41 @@ html, body
 {
     background-color: var(--dark-color);
 }
+.patch-check
+{
+    position: absolute;
+    left: 12px;
+    top: 4px;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--white-color);
+    background: none;
+    -webkit-appearance: none;
+    transition: border-color .2s ease;
+    outline: none;
+}
+.patch-check:before
+{
+    content: "";
+    width: 6px;
+    height: 12px;
+    border: 1px solid transparent;
+    border-bottom-color: var(--white-color);
+    border-right-color: var(--white-color);
+    position: absolute;
+    top: -2px;
+    left: 3px;
+    opacity: 0;
+    transform: rotate(45deg);
+    transition: opacity .2s ease;
+}
+.patch-check:checked:before
+{
+    opacity: 1;
+}
+.patch-check:checked
+{
+    border-color: transparent;
+}

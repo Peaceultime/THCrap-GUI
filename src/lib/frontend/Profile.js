@@ -117,8 +117,6 @@ module.exports = class Profile
 		const rename = new RenamePopup(askTranslation("rename-profile", this.#name));
 		rename.show();
 		rename.promise.then(function() {
-			console.log(rename.value);
-			console.log(!rename.value, rename.value.trim() === "", Profile.#list.has(rename.value), Profile.#vanilla.name === rename.value);
 			if(!rename.value || rename.value.trim() === "" || Profile.#list.has(rename.value) || Profile.#vanilla.name === rename.value)
 				return;
 			ipcRenderer.send("profile", "rename", {name: this.#name, newName: rename.value});
@@ -138,6 +136,24 @@ module.exports = class Profile
 			return;
 		//Show patch list popup with selection
 		//Then get the selected patches
+		const popup = new PatchListPopup(Array.from(this.#patch, e => e));
+		popup.show();
+		popup.promise.finally(function() {
+			const list = popup.list, actual = [...this.#patch];
+			for(const patch of list)
+			{
+				const index = actual.indexOf(patch);
+				if(index === -1)
+					ipcRenderer.send("profile", "add", {name: this.#name, patchId: patch});
+				else
+					actual.splice(index, 1);
+			}
+			for(const patch of actual)
+				ipcRenderer.send("profile", "remove", {name: this.#name, patchId: patch});
+
+			this.#patch = list;
+			this.update();
+		}.bind(this));
 	}
 	default(bool)
 	{

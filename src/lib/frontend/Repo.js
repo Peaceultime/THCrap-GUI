@@ -6,6 +6,7 @@ module.exports = class Repo
 	#name = "";
 	#patch = new Map();
 	#node = null;
+	#checknode = null;
 	#head = null;
 	static get(name)
 	{
@@ -31,19 +32,47 @@ module.exports = class Repo
 	}
 	toggle()
 	{
-		if(this.#node.classList.contains("repo-toggled"))
+		if((this.#checknode && this.#checknode.classList.contains("repo-toggled")) || (this.#node && this.#node.classList.contains("repo-toggled")))
 			for(const [name, patch] of this.#patch)
 				patch.unselect();
-		this.#node.classList.toggle("repo-toggled");
+		if(this.#node)
+			this.#node.classList.toggle("repo-toggled");
+		if(this.#checknode)
+			this.#checknode.classList.toggle("repo-toggled");
+	}
+	unselect()
+	{
+		for(const [name, patch] of this.#patch)
+			patch.unselect();
+	}
+	check(list)
+	{
+		for(const [name, patch] of this.#patch)
+			patch.check(list.includes(name));
+	}
+	get head()
+	{
+		if(!this.#head)
+		{
+			this.#head = Utils.nodes.children(Utils.nodes.div("repo-header"), [Utils.nodes.div("repo-text", askTranslation("repo")), Utils.nodes.div("repo-name", this.#name), Utils.nodes.div("repo-patch", (this.#patch.size > 1 ? askTranslation("plural-patch") : askTranslation("single-patch")).replace("%s", this.#patch.size))]);
+			this.#head.addEventListener("click", this.toggle.bind(this));
+		}
+		return this.#head;
 	}
 	get node()
 	{
 		if(!this.#node)
-		{
-			this.#head = Utils.nodes.children(Utils.nodes.div("repo-header"), [Utils.nodes.div("repo-text", askTranslation("repo")), Utils.nodes.div("repo-name", this.#name), Utils.nodes.div("repo-patch", (this.#patch.size > 1 ? askTranslation("plural-patch") : askTranslation("single-patch")).replace("%s", this.#patch.size))]);
-			this.#head.addEventListener("click", this.toggle.bind(this));
-			this.#node = Utils.nodes.children(Utils.nodes.div("repo-content"), [this.#head, Utils.nodes.children(Utils.nodes.div("repo-patch-list"), Array.from(this.#patch.values(), e => e.node))]);
-		}
+			this.#node = Utils.nodes.children(Utils.nodes.div("repo-content"), [this.head, Utils.nodes.children(Utils.nodes.div("repo-patch-list"), Array.from(this.#patch.values(), e => e.node))]);
 		return this.#node;
+	}
+	get checknode()
+	{
+		if(!this.#checknode)
+			this.#checknode = Utils.nodes.children(Utils.nodes.div("repo-content"), [this.head, Utils.nodes.children(Utils.nodes.div("repo-patch-list"), Array.from(this.#patch.values(), e => e.checknode))]);
+		return this.#checknode;
+	}
+	get list()
+	{
+		return Array.from(this.#patch, e => e[1]).filter(e => e.checked).map(e => e.fullId);
 	}
 }
