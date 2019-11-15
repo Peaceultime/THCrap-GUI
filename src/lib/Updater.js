@@ -15,19 +15,19 @@ module.exports = class Updater
 	{
 		Updater.#status = status;
 	}
-	static update(web)
+	static update()
 	{
-		Updater.#web = web;
+		Updater.#web = App.#win.webContent;
 		return Updater.check().then(() => Updater.download()).then(function() {
 			Updater.#web.reload();
 		}).catch(function() {
-			Updater.#web.send("updating", Constants.STATE.LOADING);
+			App.send("updating", Constants.STATE.LOADING);
 			return;
 		});
 	}
 	static check()
 	{
-		Updater.#web.send("updating", Constants.STATE.SEARCHING);
+		App.send("updating", Constants.STATE.SEARCHING);
 		return Promise.resolve();
 	}
 	static download()
@@ -39,16 +39,16 @@ module.exports = class Updater
 		if(length === 0)
 			return Promise.resolve();
 
-		Updater.#web.send("updating", Constants.STATE.UPDATING_START, length, "updating-crap");
+		App.send("updating", Constants.STATE.UPDATING_START, length, "updating-crap");
 		Updater.#web.session.clearCache();
 
 		return Utils.for(Updater.#updatable, function(itm, key, idx) {
 			return Utils.download(itm, Utils.required.path.join(key)).then(function() {
-				Updater.#web.send("updating", Constants.STATE.UPDATING);
+				App.send("updating", Constants.STATE.UPDATING);
 				return;
 			});
 		}).catch(function(err) {
-			Updater.#web.send("updating", Constants.STATE.ERROR);
+			App.send("updating", Constants.STATE.ERROR);
 			console.error(err);
 			return;
 		});

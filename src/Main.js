@@ -74,7 +74,7 @@ function createWindow()
 		switch(request)
 		{
 			case "retry":
-				start();
+				update();
 				break;
 
 			case "offline":

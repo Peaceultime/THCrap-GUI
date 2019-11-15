@@ -64,6 +64,9 @@ module.exports = class PatchManager
 		first = first.endsWith("/") ? first.substr(0, first.length - 1) : first;
 		const neighbors = [first], fetched = [];
 
+		if(!Updater.connection)
+			return Promise.resolve();
+
 		const dl = function(url) {
 			return new Promise(function(res, rej) {
 				Utils.get(url + "/repo.js").then(function(data) {
