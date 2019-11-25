@@ -1,5 +1,6 @@
 const Constants = require("./Constants");
 const Utils = require("./Utils");
+const App = require("./App");
 
 module.exports = class Updater
 {
@@ -17,7 +18,7 @@ module.exports = class Updater
 	}
 	static update()
 	{
-		Updater.#web = App.#win.webContent;
+		Updater.#web = App.win.webContent;
 		return Updater.check().then(() => Updater.download()).then(function() {
 			Updater.#web.reload();
 		}).catch(function() {

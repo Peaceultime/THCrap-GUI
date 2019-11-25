@@ -29,7 +29,7 @@ module.exports = class Popup
 	hide()
 	{
 		this.#background.classList.add("popup-fade");
-		setTimeout(function(e) { e.parentNode.removeChild(e) } , 500, this.#background);
+		setTimeout(function(e) { if(e && e.parentNode) e.parentNode.removeChild(e) } , 500, this.#background);
 	}
 	get promise()
 	{

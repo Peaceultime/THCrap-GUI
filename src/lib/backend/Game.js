@@ -48,8 +48,7 @@ module.exports = class Game
 				profile.file(),
 				profile.download(function(e) { return Utils.required.path.dirname(e) === "." || e.startsWith(this.id + "/"); }.bind(this))
 			]).catch(console.error).then(function() {
-				console.log(Utils.required.path.join(process.cwd(), "src", "thcrap", "thcrap_loader.exe"), ["launch.js", this.path]);
-				const child = spawn(Utils.required.path.join(process.cwd(), "src", "thcrap", "thcrap_loader.exe"), ["launch.js", this.path], {cwd: Utils.required.path.join(process.cwd(), "src", "thcrap")});
+				const child = spawn(Utils.required.path.join(process.cwd(), "src", "thcrap", "bin", "thcrap_loader.exe"), ["launch.js", this.path], {cwd: Utils.required.path.join(process.cwd(), "src", "thcrap", "bin")});
 
 				App.running = true;
 				App.win.minimize();

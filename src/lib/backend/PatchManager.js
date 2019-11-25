@@ -1,6 +1,7 @@
 const Patch = require("./Patch");
 const Repo = require("./Repo");
 const Utils = require("../Utils");
+const Updater = require("../Updater");
 const Settings = require("./Settings");
 const {ipcMain} = require("electron");
 
@@ -16,7 +17,7 @@ module.exports = class PatchManager
 		//Store every patch and concat every version files from the patches
 		return PatchManager.loadRepos().then(function() {
 			return PatchManager.fetch(Settings.get("first_repo"));
-		}).then(function() {
+		}).finally(function() {
 			for(const [key, repo] of PatchManager.#repos)
 			{
 				for(const [k, patch] of repo.patches)
@@ -65,7 +66,7 @@ module.exports = class PatchManager
 		const neighbors = [first], fetched = [];
 
 		if(!Updater.connection)
-			return Promise.resolve();
+			return Promise.reject();
 
 		const dl = function(url) {
 			return new Promise(function(res, rej) {

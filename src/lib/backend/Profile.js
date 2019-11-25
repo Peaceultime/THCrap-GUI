@@ -59,7 +59,7 @@ module.exports = class Profile
 		return Utils.save(Utils.required.path.join("src", "thcrap", "config", "launch.js"), JSON.stringify({
 			"console": Settings.get("console"),
 			"dat_dump": Settings.get("dat_dump"),
-			"patches": [...this.#patch.keys(), ...this.#depen.keys()].map(e => e + "/")
+			"patches": [...this.#patch.keys(), ...this.#depen.keys()].map(e => ({archive: "repos/" + e + "/"}))
 		})).catch(console.error);
 	}
 	get patch()
