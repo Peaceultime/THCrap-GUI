@@ -30,3 +30,4 @@ exports.STATE = {
 	ERROR: 5
 }
 exports.DEBUG = false;
+exports.TIMING = true;

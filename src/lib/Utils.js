@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const URL = require('url');
 const crypto = require("crypto");
+const {performance} = require("perf_hooks");
 const Constant = require("./Constants");
 
 utils.required = {
@@ -172,14 +173,16 @@ utils.request = function(url, method)
  */
 utils.download = function(url, dest)
 {
+	let time;
+	if(Constant.TIMING)
+		time = performance.now();
+
 	if(typeof url !== "string" || typeof dest !== "string")
 		return Promise.reject();
 
 	return new Promise(function(res, rej) {
 		utils.request(url).then(function(then) {
-			let code = then.statusCode;
-			code = (code - (code % 100)) / 100;
-			if(code === 4 || code === 5)
+			if(then.statusCode >= 400)
 				rej();
 			else
 			{
@@ -197,6 +200,8 @@ utils.download = function(url, dest)
 							body += data;
 						});
 						then.on("end", function() {
+							if(Constant.TIMING)
+								console.log(performance.now() - time);
 							res(body);
 						}).on("error", function(e) {
 							rej(e);
