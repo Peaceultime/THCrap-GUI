@@ -177,26 +177,33 @@ utils.download = function(url, dest)
 
 	return new Promise(function(res, rej) {
 		utils.request(url).then(function(then) {
-			utils.rmkdir(path.dirname(dest), function(e) {
-				if(e)
-					rej(e);
-				else
-				{
-					if(Constant.DEBUG)
-						console.log("Starting to save " + url + " in " + (path.isAbsolute(dest) ? dest : path.join(process.cwd(), dest)));
-
-					let write = fs.createWriteStream(dest), body = "";
-					then.pipe(write);
-					then.on("data", function(data) {
-						body += data;
-					})
-					then.on("end", function() {
-						res(body);
-					}).on("error", function(e) {
+			let code = then.statusCode;
+			code = (code - (code % 100)) / 100;
+			if(code === 4 || code === 5)
+				rej();
+			else
+			{
+				utils.rmkdir(path.dirname(dest), function(e) {
+					if(e)
 						rej(e);
-					});
-				}
-			});
+					else
+					{
+						if(Constant.DEBUG)
+							console.log("Starting to save " + url + " in " + (path.isAbsolute(dest) ? dest : path.join(process.cwd(), dest)));
+
+						let write = fs.createWriteStream(dest), body = "";
+						then.pipe(write);
+						then.on("data", function(data) {
+							body += data;
+						});
+						then.on("end", function() {
+							res(body);
+						}).on("error", function(e) {
+							rej(e);
+						});
+					}
+				});
+			}
 		}).catch(rej);
 	});
 };

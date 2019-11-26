@@ -36,7 +36,7 @@ module.exports = class Repo {
 		return Utils.batch(this.servers, patches, Utils.required.path.join("src", "thcrap", "repos", this.id), function(data) {
 			data = JSON.parse(data);
 			const p = new Patch(data, this.id);
-			this.#patches.set(data.patch, p);
+			this.#patches.set(data.id, p);
 			App.send("updating", Constants.STATE.UPDATING);
 			return p.setup();
 		}.bind(this));

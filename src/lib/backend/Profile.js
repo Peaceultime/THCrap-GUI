@@ -36,6 +36,8 @@ module.exports = class Profile
 			const arr = [...patch.dependencies];
 			for(const id of arr)
 			{
+				if(id.indexOf("/") == -1)
+					id = patch.repo + "/" + id;
 				if(!this.#depen.has(id))
 				{
 					const dep = PatchManager.get(id);

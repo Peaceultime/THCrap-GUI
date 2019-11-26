@@ -69,27 +69,25 @@ module.exports = class PatchManager
 			return Promise.reject();
 
 		const dl = function(url) {
-			return new Promise(function(res, rej) {
-				Utils.get(url + "/repo.js").then(function(data) {
-					const obj = JSON.parse(data);
-					const updated = PatchManager.#repos.has(obj.id);
-					const repo = updated ? PatchManager.#repos.get(obj.id).update(obj) : new Repo(obj);
-					PatchManager.#repos.set(repo.id, repo);
+			return Utils.get(url + "/repo.js").then(function(data) {
+				const obj = JSON.parse(data);
+				const updated = PatchManager.#repos.has(obj.id);
+				const repo = updated ? PatchManager.#repos.get(obj.id).update(obj) : new Repo(obj);
+				PatchManager.#repos.set(repo.id, repo);
 
-					fetched.push(neighbors.splice(0, 1)[0]);
-					if(repo.neighbors)
-						for(let n of repo.neighbors)
-						{
-							n = n.endsWith("/") ? n.substr(0, n.length - 1) : n;
-							if(!fetched.includes(n) && !neighbors.includes(n))
-								neighbors.push(n);
-						}
+				fetched.push(neighbors.splice(0, 1)[0]);
+				if(repo.neighbors)
+					for(let n of repo.neighbors)
+					{
+						n = n.endsWith("/") ? n.substr(0, n.length - 1) : n;
+						if(!fetched.includes(n) && !neighbors.includes(n))
+							neighbors.push(n);
+					}
 
-					Promise.allSettled([
-						repo.download(),
-						Utils.save(Utils.required.path.join("src", "thcrap", "repos", repo.id, "repo.js"), data)
-					]).then(res, rej);
-				}, rej);
+				return Promise.allSettled([
+					repo.download(),
+					Utils.save(Utils.required.path.join("src", "thcrap", "repos", repo.id, "repo.js"), data)
+				]);
 			});
 		}.bind(PatchManager);
 
