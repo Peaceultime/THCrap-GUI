@@ -194,12 +194,13 @@ utils.download = function(url, dest)
 
 						let write = fs.createWriteStream(dest), body = "";
 						then.pipe(write);
+
 						then.on("data", function(data) {
 							body += data;
 						});
 						then.on("end", function() {
 							if(Constant.TIMING)
-								console.log("It took %s ms to save %s in %s", performance.now() - time, url, (path.isAbsolute(dest) ? dest : path.join(process.cwd(), dest)));
+								console.log("It took %s ms to save %s", performance.now() - time, url);
 							res(body);
 						}).on("error", function(e) {
 							console.error(e);

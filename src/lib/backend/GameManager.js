@@ -37,12 +37,16 @@ const GameManager = module.exports = class GameManager
 		else if(request === "search")
 		{
 			if(!args)
-				dialog.showOpenDialog({title: Translation.translate("search-title"), properties: ["openDirectory"]}).then(function(result) {
-					if(result.cancelled)
-						return;
+			{
+				const returned = dialog.showOpenDialog({title: Translation.translate("search-title"), properties: ["openDirectory"]});
+				if(returned && returned.then)
+					returned.then(function(result) {
+						if(result.cancelled)
+							return;
 
-					GameManager.search(result.filePaths[0]);
-				});
+						GameManager.search(result.filePaths[0]);
+					});
+			}
 		}
 		else if(request === "edit")
 		{

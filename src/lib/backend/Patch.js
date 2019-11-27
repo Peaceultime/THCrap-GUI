@@ -19,13 +19,13 @@ module.exports = class Patch
 	load()
 	{
 		return Promise.all([
-			Utils.read(Utils.required.path.join("src", "thcrap", "repos", this.#repo, this.#id, "versions.js")).then(function(d) { this.#version = JSON.parse(d); }.bind(this)), 
+			Utils.read(Utils.required.path.join("src", "thcrap", "repos", this.#repo, this.#id, "versions.js")).then(function(d) { this.#version = JSON.parse(d); }.bind(this)),
 			Utils.read(Utils.required.path.join("src", "thcrap", "repos", this.#repo, this.#id, "files.js")).then(function(d) { this.#checksum = JSON.parse(d); }.bind(this))
 		]);
 	}
 	setup()
 	{
-		if(this.repo !== "nmlgc")
+		if(this.dependencies)
 			return Promise.resolve();
 		else
 			return Utils.batch(this.#obj.servers, ["versions.js"], Utils.required.path.join("src", "thcrap", "repos", this.#repo, this.#id), function(data, file) {
