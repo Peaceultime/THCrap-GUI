@@ -4,7 +4,7 @@ const App = require("./App");
 
 module.exports = class Updater
 {
-	static #servers = [];
+	static #servers = ["https://aspect-code.net/static/download/touhou_launcher"];
 	static #updatable = [];
 	static #latest = 0;
 	static #status = false;
@@ -25,10 +25,12 @@ module.exports = class Updater
 
 		return Utils.read(Utils.required.path.join("src", "version.js")).then(function(data) {
 			client = JSON.parse(data);
-			return Utils.get(Updater.#servers, ["versions.js"], (d) => {server = JSON.parse(d)})
+			return Utils.get(Updater.#servers[0] + "/version.js").then((d) => {server = JSON.parse(d)});
 		}).then(function() {
+			console.log(client, server);
+
 			if(server.version === Constants.VERSION)
-				return Promise.reject();;
+				return Promise.reject();
 			Updater.#latest = server.version;
 			for(const [path, sha] of Object.entries(server.files))
 				if(client[path] !== sha)
@@ -42,16 +44,18 @@ module.exports = class Updater
 	static download()
 	{
 		/*App.send("updating", Constants.STATE.UPDATING_START, Updater.#updatable.length, "updating-crap");
-		App.win.webContent.session.clearCache();
 
-		return Utils.batch(Updater.#servers, Updater.#updatable, () => { App.send("updating", Constants.STATE.UPDATING) }).catch(function(err) {
+		return Utils.batch(Updater.#servers, Updater.#updatable, () => { App.send("updating", Constants.STATE.UPDATING) }).catch(function(e) {
 			App.send("updating", Constants.STATE.ERROR);
+		}).then(function(failed) {
+			console.log(failed);
+			return Utils.batch(Updater.#servers, [...Array(Updater.#latest).keys()].map(i => (i + Constants.VERSION)));
 		}).then(function() {
-			return Utils.batch(Updater.#servers, [...Array(Updater.#latest).keys()].map(i => i + Constants.VERSION));
+			return Updater.install()/*.then(() => Utils.save(Utils.required.path.join("src", "version.js")))*/;
 		});*/
 	}
 	static install()
 	{
-
+		//return Promise.resolve();
 	}
 };

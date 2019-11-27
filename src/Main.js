@@ -28,11 +28,11 @@ function createWindow()
 		return Translation.load(Settings.get("lang"));
 	}).then(function() {
 		win = App.launch(Utils.required.path.join('src', 'html', 'index.html'), {
-			show: false, 
-			frame: false, 
-			height: 303, 
-			width: 370, 
-			fullscreenable: false, 
+			show: false,
+			frame: false,
+			height: 303,
+			width: 370,
+			fullscreenable: false,
 			resizable: false,
 			webPreferences: {
 				nodeIntegration: true,
@@ -94,7 +94,7 @@ function update()
 {
 	if(Updater.connection())
 	{
-		Updater.update(win.webContents).then(function() {
+		Updater.update().then(function() {
 			app.relaunch({ args: process.argv.slice(1).concat(['--updated']) });
 			app.exit(0);
 		}, function() {
