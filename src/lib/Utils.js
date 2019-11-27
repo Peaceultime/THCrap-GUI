@@ -20,7 +20,8 @@ utils.required = {
 	https: https,
 	fs: fs,
 	URL: URL,
-	crypto: crypto
+	crypto: crypto,
+	performance: performance
 };
 
 /**
@@ -127,7 +128,7 @@ utils.request = function(url, method)
 	};
 
 	if(Constant.DEBUG)
-		console.log("Getting " + url.format() + " using " + request.method + " method");
+		console.log("Requesting %s using '%s' method", url.format(), request.method);
 
 	return new Promise(function(res, rej)
 	{
@@ -138,7 +139,6 @@ utils.request = function(url, method)
 				{
 					if(Constant.DEBUG)
 						console.log("HTTPS Code " + resp.statusCode + ": Redirection");
-
 					utils.request(resp.headers.location, method).then(res).catch(rej);
 				}
 				else
@@ -154,7 +154,6 @@ utils.request = function(url, method)
 				{
 					if(Constant.DEBUG)
 						console.log("HTTP Code " + resp.statusCode + ": Redirection");
-
 					utils.request(resp.headers.location, method).then(res).catch(rej);
 				}
 				else
@@ -183,15 +182,14 @@ utils.download = function(url, dest)
 	return new Promise(function(res, rej) {
 		utils.request(url).then(function(then) {
 			if(then.statusCode >= 400)
-				rej();
+				rej(new Error("Error " + then.statusCode + (then.statusMessage ? (": " + then.statusMessage) : "")));
 			else
-			{
 				utils.rmkdir(path.dirname(dest), function(e) {
 					if(e)
 						rej(e);
 					else
 					{
-						if(Constant.DEBUG)
+						if(Constant.DEBUG && !Constant.TIMING)
 							console.log("Starting to save " + url + " in " + (path.isAbsolute(dest) ? dest : path.join(process.cwd(), dest)));
 
 						let write = fs.createWriteStream(dest), body = "";
@@ -201,14 +199,14 @@ utils.download = function(url, dest)
 						});
 						then.on("end", function() {
 							if(Constant.TIMING)
-								console.log(performance.now() - time);
+								console.log("It took %s ms to save %s in %s", performance.now() - time, url, (path.isAbsolute(dest) ? dest : path.join(process.cwd(), dest)));
 							res(body);
 						}).on("error", function(e) {
+							console.error(e);
 							rej(e);
 						});
 					}
 				});
-			}
 		}).catch(rej);
 	});
 };
@@ -382,13 +380,12 @@ utils.nodes = {
 
 /**
  * Try to download a given list of files from several servers
- * @param  {Array<string>} srvlist	   		   List of fetched servers
- * @param  {Array<string>} files	   		   List of files to download
- * @param  {string} dir 					   Where are saved all the files
- * @param  {Function<string, string>} progress Function executed after each download, with the data has the first argument and the file name has the second
- * @return {Promise<Array<string>>}    		   Return the list of the failed downloads
+ * @param  {Array<string>} srvlist 					List of fetched servers
+ * @param  {Array<string>} files 					List of files to download
+ * @param  {string} dir 							Where are saved all the files
+ * @param  {Function<string, string, int>} progress	Function executed after each download, with the data as the first argument, the file name as the second and the iteration as the third
+ * @return {Promise<Array<string>>} 				Return the list of the failed downloads
  */
-//Evol: Remember the server and always download from it.
 utils.batch = function(srvlist, files, dir, progress)
 {
 	const failed = [];

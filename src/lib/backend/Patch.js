@@ -25,9 +25,12 @@ module.exports = class Patch
 	}
 	setup()
 	{
-		return Utils.batch(this.#obj.servers, ["versions.js"], Utils.required.path.join("src", "thcrap", "repos", this.#repo, this.#id), function(data, file) {
-			this.#version = JSON.parse(data);
-		}.bind(this));
+		if(this.repo !== "nmlgc")
+			return Promise.resolve();
+		else
+			return Utils.batch(this.#obj.servers, ["versions.js"], Utils.required.path.join("src", "thcrap", "repos", this.#repo, this.#id), function(data, file) {
+				this.#version = JSON.parse(data);
+			}.bind(this));
 	}
 	download(filter)
 	{

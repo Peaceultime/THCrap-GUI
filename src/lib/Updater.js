@@ -4,13 +4,13 @@ const App = require("./App");
 
 module.exports = class Updater
 {
-	static #authorized = false;
-	static #updatable = {}; //Key: filename, value: url with appropriate server prefix
-	static #web = null;
+	static #servers = [];
+	static #updatable = [];
+	static #latest = 0;
 	static #status = false;
 	static connection()
 	{
-		return Updater.#status
+		return Updater.#status;
 	}
 	static setConnectionStatus(status)
 	{
@@ -18,40 +18,40 @@ module.exports = class Updater
 	}
 	static update()
 	{
-		Updater.#web = App.win.webContent;
-		return Updater.check().then(() => Updater.download()).then(function() {
-			Updater.#web.reload();
-		}).catch(function() {
-			App.send("updating", Constants.STATE.LOADING);
-			return;
-		});
-	}
-	static check()
-	{
 		App.send("updating", Constants.STATE.SEARCHING);
-		return Promise.resolve();
+		return Promise.reject();
+
+		/*let client, server;
+
+		return Utils.read(Utils.required.path.join("src", "version.js")).then(function(data) {
+			client = JSON.parse(data);
+			return Utils.get(Updater.#servers, ["versions.js"], (d) => {server = JSON.parse(d)})
+		}).then(function() {
+			if(server.version === Constants.VERSION)
+				return Promise.reject();;
+			Updater.#latest = server.version;
+			for(const [path, sha] of Object.entries(server.files))
+				if(client[path] !== sha)
+					Updater.#updatable.push(path);
+			if(Updater.#updatable.length === 0)
+				return Promise.reject();
+			else
+				return Updater.download();
+		});*/
 	}
 	static download()
 	{
-		if(!Updater.#authorized)
-			return Promise.reject(new Error("You're not allowed to use this function like that."));
+		/*App.send("updating", Constants.STATE.UPDATING_START, Updater.#updatable.length, "updating-crap");
+		App.win.webContent.session.clearCache();
 
-		const length = Object.keys(Updater.#updatable).length;
-		if(length === 0)
-			return Promise.resolve();
-
-		App.send("updating", Constants.STATE.UPDATING_START, length, "updating-crap");
-		Updater.#web.session.clearCache();
-
-		return Utils.for(Updater.#updatable, function(itm, key, idx) {
-			return Utils.download(itm, Utils.required.path.join(key)).then(function() {
-				App.send("updating", Constants.STATE.UPDATING);
-				return;
-			});
-		}).catch(function(err) {
+		return Utils.batch(Updater.#servers, Updater.#updatable, () => { App.send("updating", Constants.STATE.UPDATING) }).catch(function(err) {
 			App.send("updating", Constants.STATE.ERROR);
-			console.error(err);
-			return;
-		});
+		}).then(function() {
+			return Utils.batch(Updater.#servers, [...Array(Updater.#latest).keys()].map(i => i + Constants.VERSION));
+		});*/
+	}
+	static install()
+	{
+
 	}
 };

@@ -14,12 +14,15 @@ const Updater = require('./lib/Updater');
 const App = require('./lib/App');
 const Constants = require('./lib/Constants');
 
-let win, isUpdated;
+let win, isUpdated, time;
 
 function createWindow()
 {
 	if(process.argv.includes("--updated"))
 		isUpdated = true;
+
+	if(Constants.TIMING)
+		time = Utils.required.performance.now();
 
 	Settings.load().then(function() {
 		return Translation.load(Settings.get("lang"));
@@ -92,11 +95,11 @@ function update()
 	if(Updater.connection())
 	{
 		Updater.update(win.webContents).then(function() {
-			load();
-		}, function() {
 			app.relaunch({ args: process.argv.slice(1).concat(['--updated']) });
 			app.exit(0);
-		})
+		}, function() {
+			load();
+		});
 	}
 	else
 		win.webContents.send("updating", Constants.STATE.NOCONNECTION);
@@ -104,11 +107,16 @@ function update()
 
 function load()
 {
+	App.send("updating", Constants.STATE.LOADING)
 	PatchManager.load().then(function() {
 		return Promise.all([GameManager.load(),
 		ProfileManager.load()]);
 	}, console.error).then(function() {
 		ipcMain.removeAllListeners("updater");
+
+		if(Constants.TIMING)
+			console.log("Updating end in %s s", Math.round(Utils.required.performance.now() - time) / 1000);
+
 		win = App.launch(Utils.required.path.join("src", "html", "app.html"), {
 			show: false,
 			frame: false,
