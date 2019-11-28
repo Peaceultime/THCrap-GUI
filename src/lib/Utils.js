@@ -72,10 +72,10 @@ utils.readdir = function(dir)
 /**
  * Promisified version of lstat
  */
-utils.lstat = function(path)
+utils.lstat = function(file)
 {
 	return new Promise(function(res, rej) {
-		fs.lstat(path, function(e, stat) {
+		fs.lstat(file, function(e, stat) {
 			if(e)
 				rej(e);
 			else
@@ -84,9 +84,63 @@ utils.lstat = function(path)
 	});
 };
 /**
+ * Promisified version of unlink
+ */
+utils.unlink = function(file)
+{
+	return new Promise(function(res, rej) {
+		fs.unlink(file, function(e) {
+			if(e)
+				rej(e);
+			else
+				res();
+		});
+	});
+};
+/**
+ * Promisified version of rmdir
+ * @param {string} path   Path to the deleted folder
+ * @param {boolean} force Remove everything in the folder before removing it
+ */
+utils.rmdir = function(dir, force = true)
+{
+	const promised = function() {
+		return new Promise(function(res, rej) {
+			fs.rmdir(path, function(e) {
+				if(e)
+					rej(e);
+				else
+					res();
+			})
+		});
+	};
+
+	if(!force)
+		return promised(path);
+	else
+		return utils.readdir(path).then(function(dir) {
+			if(files.length === 0)
+				return promised(path);
+			else
+			{
+				return utils.for(files, function(file, k, i) {
+					file = path.join(dir, file);
+					return utils.lstat(file).then(function(s) {
+						if(s.isDirectory())
+							return utils.rmdir(file);
+						else if(s.isFile())
+							return utils.unlink(file);
+					});
+				}).then(function() {
+					return promised(dir);
+				});
+			}
+		});
+}
+/**
  * Recursive mkdir. It don't prompt error on existant dirs like the recursive mkdir from fs.
- * @param  {String}   dest     Final directory
- * @param  {Function} callback Callback once the directories have been created
+ * @param  {String}   dest     Final folder
+ * @param  {Function} callback Callback once the folder have been created
  */
 utils.rmkdir = function(dest, callback)
 {
@@ -402,7 +456,7 @@ utils.batch = function(srvlist, files, dir, progress)
 				if(downloaded)
 					return;
 
-				return utils.download(srv + file, path.join(dir, file)).then(function(data) {
+				return utils.download(srv + "/" + file, path.join(dir, file)).then(function(data) {
 					if(!cache)
 						cache = srv;
 					downloaded = true;
@@ -410,7 +464,7 @@ utils.batch = function(srvlist, files, dir, progress)
 						return progress(data, file, i);
 				});
 			}, undefined, false).catch(function(e) {
-				if(Constants.DEBUG)
+				if(Constant.DEBUG)
 				{
 					console.log("Failed to download %s", file);
 					console.error(e);
@@ -422,7 +476,7 @@ utils.batch = function(srvlist, files, dir, progress)
 				if(progress)
 					return progress(data, file, i);
 			}).catch(function(e) {
-				if(Constants.DEBUG)
+				if(Constant.DEBUG)
 				{
 					console.log("Failed to download %s", file);
 					console.error(e);
@@ -430,7 +484,7 @@ utils.batch = function(srvlist, files, dir, progress)
 				failed.push(file);
 			});
 	}, undefined, false).finally(function() {
-		return Promise.resolve(failed);
+		return failed;
 	});
 };
 

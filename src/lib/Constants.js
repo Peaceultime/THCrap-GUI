@@ -1,5 +1,4 @@
 exports.VERSION = 1;
-exports.SERVERS = ["https://aspect-code.net/updater/thcrap/"];
 exports.GAME_DATA = {
 	"th06": {"jp": "東方紅魔郷", "en": "Embodiment of Scarlet Devil", "title": "Touhou 6"}, "th07": {"jp": "東方妖々夢", "en": "Perfect Cherry Blossom", "title": "Touhou 7"},
 	"th075": {"jp": "東方萃夢想", "en": "Immaterial and Missing Power", "title": "Touhou 7.5"}, "th08": {"jp": "東方永夜抄", "en": "Imperishable Night", "title": "Touhou 8"},
@@ -29,5 +28,5 @@ exports.STATE = {
 	NOCONNECTION: 4,
 	ERROR: 5
 }
-exports.DEBUG = false;
+exports.DEBUG = true;
 exports.TIMING = false;
