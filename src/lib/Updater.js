@@ -24,7 +24,7 @@ module.exports = class Updater
 
 		return Utils.read(Utils.required.path.join("src", "version.js")).then(function(data) {
 			client = JSON.parse(data);
-			return Utils.get(Updater.#servers[0] + "/version.js").then((d) => {server = JSON.parse(d)});
+			return Utils.for(Updater.#servers, (serv) => { if(!server) return Utils.get(serv + "/version.js").then((d) => server = JSON.parse(d)); }, undefined, false);
 		}).then(function() {
 			if(server.version === Constants.VERSION)
 				return Promise.reject();
@@ -36,7 +36,7 @@ module.exports = class Updater
 				return Promise.reject();
 			else
 				return Updater.download();
-		});
+		}).catch(Updater.cancel);
 	}
 	static download()
 	{
@@ -50,12 +50,18 @@ module.exports = class Updater
 			App.send("updating", Constants.STATE.ERROR);
 			return Promise.reject();
 		}).then(function() {
-			return Updater.install()/*.then(() => Utils.save(Utils.required.path.join("src", "version.js")))*/;
+			return Updater.install();
 		});
 	}
 	static install()
 	{
-		return Promise.resolve();
+		return Utils.for([...Array(Updater.#latest - Constants.VERSION).keys()].map(i => (i + Constants.VERSION + 1)), function(version) {
+			return require(Utils.required.path.join("tmp", "install", version, "install"))(App, Utils);
+		}, undefined, false).then(function() {
+			return Utils.rmdir(Utils.required.path.join("tmp", "install"), true);
+		}).then(function() {
+			return Utils.rename(Utils.required.path.join("tmp"), Utils.required.path.join("test"));
+		});
 	}
 	static cancel()
 	{

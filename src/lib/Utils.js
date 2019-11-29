@@ -98,6 +98,20 @@ utils.unlink = function(file)
 	});
 };
 /**
+ * Promisified version of rename
+ */
+utils.rename = function(file, newFile)
+{
+	return new Promise(function(res, rej) {
+		fs.unlink(file, newFile, function(e) {
+			if(e)
+				rej(e);
+			else
+				res();
+		});
+	});
+};
+/**
  * Promisified version of rmdir
  * @param {string} path   Path to the deleted folder
  * @param {boolean} force Remove everything in the folder before removing it
@@ -318,9 +332,9 @@ utils.get = function(url)
 utils.for = function(object, callback, thisArg, stop = true)
 {
 	if(typeof object !== "object")
-		return Promise.reject(new TypeError("object must be <Object>, <Map> or <Array>"));
+		return Promise.reject(new TypeError("object must be a Object, a Map or an Array"));
 	if(typeof callback !== "function")
-		return Promise.reject(new TypeError("callback must be <Function> (GeneratorFunction are not handle)"));
+		return Promise.reject(new TypeError("callback must be a Function (GeneratorFunction are not handle)"));
 
 	let values = Object.values(object);
 	if(object.values && values.length === 0)
@@ -346,13 +360,20 @@ utils.for = function(object, callback, thisArg, stop = true)
 		if(index == keys.length)
 			return Promise.resolve();
 
-		const result = callback.call(thisArg, values[index], keys[index], index);
-		if(result && result.then && stop)
-			return result.then(function() { index++; return loop(); });
-		else if(result && result.finally && !stop)
-			return result.finally(function() { index++; return loop(); });
-		else
-		{
+		try {
+			const result = callback.call(thisArg, values[index], keys[index], index);
+			if(result && result.then && stop)
+				return result.then(function() { index++; return loop(); });
+			else if(result && result.finally && !stop)
+				return result.finally(function() { index++; return loop(); });
+			else
+			{
+				index++;
+				return loop();
+			}
+		} catch(e) {
+			if(!stop)
+				return Promise.reject(e);
 			index++;
 			return loop();
 		}
