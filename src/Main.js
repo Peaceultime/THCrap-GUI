@@ -70,9 +70,6 @@ function createWindow()
 		else if(args === "tool")
 			win.toggleDevTools();
 	});
-	ipcMain.on("status", function(e, status) {
-		Updater.setConnectionStatus(status);
-	});
 	ipcMain.on("updater", function(e, request) {
 		switch(request)
 		{
@@ -88,21 +85,22 @@ function createWindow()
 				break;
 		}
 	});
+	Utils.connection.on("update", function(status) {
+		App.send("connection", status);
+	});
 }
 
 function update()
 {
-	if(Updater.connection())
-	{
-		Updater.update().then(function() {
-			app.relaunch({ args: process.argv.slice(1).concat(['--updated']) });
-			app.exit(0);
-		}, function() {
+	Updater.update().then(function() {
+		app.relaunch({ args: process.argv.slice(1).concat(['--updated']) });
+		app.exit(0);
+	}, function() {
+		if(!Utils.status)
+			win.webContents.send("updating", Constants.STATE.NOCONNECTION);
+		else
 			load();
-		});
-	}
-	else
-		win.webContents.send("updating", Constants.STATE.NOCONNECTION);
+	});
 }
 
 function load()
@@ -111,7 +109,7 @@ function load()
 	PatchManager.load().then(function() {
 		return Promise.all([GameManager.load(),
 		ProfileManager.load()]);
-	}, console.error).then(function() {
+	}, () => {}).then(function() {
 		ipcMain.removeAllListeners("updater");
 
 		if(Constants.TIMING)

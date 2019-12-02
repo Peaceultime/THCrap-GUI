@@ -12,6 +12,7 @@ const path = require('path');
 const URL = require('url');
 const crypto = require("crypto");
 const {performance} = require("perf_hooks");
+const EventEmitter = require("events");
 const Constant = require("./Constants");
 
 utils.required = {
@@ -23,6 +24,8 @@ utils.required = {
 	crypto: crypto,
 	performance: performance
 };
+
+utils.connection = new EventEmitter();
 
 /**
  * Promisified version of writeFile
@@ -174,6 +177,13 @@ utils.rmkdir = function(dest, callback)
 		}
 	});
 };
+utils.updateConnection = function(status, e)
+{
+	if(utils.status !== status)
+		utils.connection.emit("update", status, e);
+
+	utils.status = status;
+}
 /**
  * Handle basic requests (in http and https) from a given URL using a given method.
  * @param  {string} url    Fetched URL
@@ -203,6 +213,7 @@ utils.request = function(url, method)
 		if(url.protocol == "https:")
 		{
 			https.request(request, function(resp) {
+				utils.updateConnection(true);
 				if(resp.statusCode > 300 && resp.statusCode < 400 && resp.headers.location)
 				{
 					if(Constant.DEBUG)
@@ -212,12 +223,14 @@ utils.request = function(url, method)
 				else
 					res(resp);
 			}).on("error", function(e) {
+				utils.updateConnection(false, e);
 				rej(e);
 			}).end();
 		}
 		else if(url.protocol == "http:")
 		{
 			http.request(request, function(resp) {
+				utils.updateConnection(true);
 				if (resp.statusCode > 300 && resp.statusCode < 400 && resp.headers.location)
 				{
 					if(Constant.DEBUG)
@@ -227,7 +240,8 @@ utils.request = function(url, method)
 				else
 					res(resp);
 			}).on("error", function(e) {
-				rej(e)
+				utils.updateConnection(false, e);
+				rej(e);
 			}).end();
 		}
 	});
@@ -314,7 +328,7 @@ utils.get = function(url)
 			then.on("error", function(e) {
 				rej(e);
 			});
-		});
+		}).catch(rej);
 	});
 };
 /**

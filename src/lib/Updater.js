@@ -7,15 +7,6 @@ module.exports = class Updater
 	static #servers = ["https://aspect-code.net/static/download/touhou_launcher/"];
 	static #updatable = [];
 	static #latest = 0;
-	static #status = false;
-	static connection()
-	{
-		return Updater.#status;
-	}
-	static setConnectionStatus(status)
-	{
-		Updater.#status = status;
-	}
 	static update()
 	{
 		App.send("updating", Constants.STATE.SEARCHING);
@@ -25,7 +16,7 @@ module.exports = class Updater
 		return Utils.read(Utils.required.path.join("src", "version.js")).then(function(data) {
 			client = JSON.parse(data);
 			return Utils.for(Updater.#servers, (serv) => { if(!server) return Utils.get(serv + "/version.js").then((d) => server = JSON.parse(d)); }, undefined, false);
-		}).then(function() {
+		}, Updater.cancel).then(function() {
 			if(server.version === Constants.VERSION)
 				return Promise.reject();
 			Updater.#latest = server.version;
@@ -63,8 +54,8 @@ module.exports = class Updater
 			return Utils.rename(Utils.required.path.join("tmp"), Utils.required.path.join("test"));
 		});
 	}
-	static cancel()
+	static cancel(e)
 	{
-		return Utils.rmdir(Utils.required.path.join("tmp"), true).finally(Promise.reject);
+		return Utils.rmdir(Utils.required.path.join("tmp"), true).finally(() => {return Promise.reject()});
 	}
 };

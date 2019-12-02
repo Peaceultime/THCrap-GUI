@@ -1,5 +1,7 @@
 const {ipcRenderer} = require("electron");
 
+let connection = false;
+
 function exit()
 {
 	ipcRenderer.send("menu", "exit");
@@ -24,12 +26,13 @@ function askSetting(prop) //Synchronized
 {
 	return ipcRenderer.sendSync("settings", prop);
 }
-window.addEventListener('online', () => ipcRenderer.send("status", navigator.onLine));
-window.addEventListener('offline', () => ipcRenderer.send("status", navigator.onLine));
-window.addEventListener("DOMContentLoaded", function() {
-	ipcRenderer.send("status", navigator.onLine);
-
+function translateAll()
+{
 	const translatable = document.querySelectorAll("[trid]");
 	for(let node of translatable)
 		node.textContent = askTranslation(node.getAttribute("trid"));
-});
+}
+
+ipcRenderer.on("connection", status => {connection = status});
+
+window.addEventListener("DOMContentLoaded", translateAll);

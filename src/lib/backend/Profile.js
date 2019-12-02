@@ -50,7 +50,7 @@ module.exports = class Profile
 	}
 	download(filter)
 	{
-		if(!Updater.connection)
+		if(!Utils.status)
 			return;
 		return Utils.for(this.#patch, (patch) => patch.download(filter), undefined, false).then(function() {
 			return Utils.for(this.#depen, (depen) => depen.download(filter), undefined, false);
