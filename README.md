@@ -13,7 +13,7 @@ informations about the software translation process.
 Tests will be add later to the project. The priority tests are the translations tests.
 
 ## Tasks
-* Add all the features from the previous rework (in `master` branch).
-* Add a changelog for the updates.
-* Add tests
-* Fork THCRAP to make it a Node module
+Please refer to the issues to have a list of the current tasks. Here is a list of the long term tasks :
+* Add tests.
+* Improve the Github by implementing CLI.
+* Fork THCRAP to make it a Node module.

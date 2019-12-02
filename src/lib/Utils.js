@@ -4,7 +4,6 @@
  * you must return an object.
  */
 "use strict";
-const utils = {};
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
@@ -15,7 +14,7 @@ const {performance} = require("perf_hooks");
 const EventEmitter = require("events");
 const Constant = require("./Constants");
 
-utils.required = {
+exports.required = {
 	path: path,
 	http: http,
 	https: https,
@@ -25,16 +24,17 @@ utils.required = {
 	performance: performance
 };
 
-utils.connection = new EventEmitter();
+exports.connection = new EventEmitter();
+exports.status = null;
 
 /**
  * Promisified version of writeFile
  * Create dir if missing
  */
-utils.save = function save(file, data)
+exports.save = function save(file, data)
 {
 	return new Promise(function(res, rej) {
-		utils.rmkdir(path.dirname(file), function() {
+		exports.rmkdir(path.dirname(file), function() {
 			fs.writeFile(file, data, function(e) {
 				if(e)
 					rej(e);
@@ -47,7 +47,7 @@ utils.save = function save(file, data)
 /**
  * Promisified version of readFile
  */
-utils.read = function(file)
+exports.read = function(file)
 {
 	return new Promise(function(res, rej) {
 		fs.readFile(file, function(e, data) {
@@ -61,7 +61,7 @@ utils.read = function(file)
 /**
  * Promisified version of readdir
  */
-utils.readdir = function(dir)
+exports.readdir = function(dir)
 {
 	return new Promise(function(res, rej) {
 		fs.readdir(dir, function(e, files) {
@@ -75,7 +75,7 @@ utils.readdir = function(dir)
 /**
  * Promisified version of lstat
  */
-utils.lstat = function(file)
+exports.lstat = function(file)
 {
 	return new Promise(function(res, rej) {
 		fs.lstat(file, function(e, stat) {
@@ -89,7 +89,7 @@ utils.lstat = function(file)
 /**
  * Promisified version of unlink
  */
-utils.unlink = function(file)
+exports.unlink = function(file)
 {
 	return new Promise(function(res, rej) {
 		fs.unlink(file, function(e) {
@@ -103,7 +103,7 @@ utils.unlink = function(file)
 /**
  * Promisified version of rename
  */
-utils.rename = function(file, newFile)
+exports.rename = function(file, newFile)
 {
 	return new Promise(function(res, rej) {
 		fs.unlink(file, newFile, function(e) {
@@ -119,7 +119,7 @@ utils.rename = function(file, newFile)
  * @param {string} path   Path to the deleted folder
  * @param {boolean} force Remove everything in the folder before removing it
  */
-utils.rmdir = function(dir, force = true)
+exports.rmdir = function(dir, force = true)
 {
 	const promised = function() {
 		return new Promise(function(res, rej) {
@@ -135,18 +135,18 @@ utils.rmdir = function(dir, force = true)
 	if(!force)
 		return promised(path);
 	else
-		return utils.readdir(path).then(function(dir) {
+		return exports.readdir(path).then(function(dir) {
 			if(files.length === 0)
 				return promised(path);
 			else
 			{
-				return utils.for(files, function(file, k, i) {
+				return exports.for(files, function(file, k, i) {
 					file = path.join(dir, file);
-					return utils.lstat(file).then(function(s) {
+					return exports.lstat(file).then(function(s) {
 						if(s.isDirectory())
-							return utils.rmdir(file);
+							return exports.rmdir(file);
 						else if(s.isFile())
-							return utils.unlink(file);
+							return exports.unlink(file);
 					});
 				}).then(function() {
 					return promised(dir);
@@ -159,14 +159,14 @@ utils.rmdir = function(dir, force = true)
  * @param  {String}   dest     Final folder
  * @param  {Function} callback Callback once the folder have been created
  */
-utils.rmkdir = function(dest, callback)
+exports.rmkdir = function(dest, callback)
 {
 	fs.mkdir(dest, function(err) {
 		if(err && err.code !== "EEXIST" && err.code !== "ENOENT")
 			callback(err);
 		else if(err && err.code === "ENOENT")
-			utils.rmkdir(path.normalize(path.join(dest, "..")), function() {
-				utils.rmkdir(dest, callback);
+			exports.rmkdir(path.normalize(path.join(dest, "..")), function() {
+				exports.rmkdir(dest, callback);
 			});
 		else
 		{
@@ -177,12 +177,12 @@ utils.rmkdir = function(dest, callback)
 		}
 	});
 };
-utils.updateConnection = function(status, e)
+exports.updateConnection = function(status, e)
 {
-	if(utils.status !== status)
-		utils.connection.emit("update", status, e);
+	if(exports.status !== status)
+		exports.connection.emit("update", status, e);
 
-	utils.status = status;
+	exports.status = status;
 }
 /**
  * Handle basic requests (in http and https) from a given URL using a given method.
@@ -191,12 +191,13 @@ utils.updateConnection = function(status, e)
  * @return {Promise}       Promise resolve on server response
  *         @param {IncomingMessage} IncomingMessage object coming from the server
  */
-utils.request = function(url, method)
+exports.request = function(url, method)
 {
 	if(typeof url !== "string")
 		return Promise.reject(new TypeError("URL must be a <String>"));
 
-	url = URL.parse(url);
+	url = URL.parse(url.replace(/\/+/g, "/").replace(":/", "://"));
+
 	let request = {
 		protocol: url.protocol,
 		hostname: url.hostname,
@@ -213,34 +214,42 @@ utils.request = function(url, method)
 		if(url.protocol == "https:")
 		{
 			https.request(request, function(resp) {
-				utils.updateConnection(true);
+				exports.updateConnection(true);
 				if(resp.statusCode > 300 && resp.statusCode < 400 && resp.headers.location)
 				{
 					if(Constant.DEBUG)
 						console.log("HTTPS Code " + resp.statusCode + ": Redirection");
-					utils.request(resp.headers.location, method).then(res).catch(rej);
+					exports.request(resp.headers.location, method).then(res).catch(rej);
 				}
 				else
 					res(resp);
+			}).on("timeout", function() {
+				this.abort();
+				rej();
 			}).on("error", function(e) {
-				utils.updateConnection(false, e);
+				if(e.code === "EACCES")
+					exports.updateConnection(false, e);
 				rej(e);
 			}).end();
 		}
 		else if(url.protocol == "http:")
 		{
 			http.request(request, function(resp) {
-				utils.updateConnection(true);
+				exports.updateConnection(true);
 				if (resp.statusCode > 300 && resp.statusCode < 400 && resp.headers.location)
 				{
 					if(Constant.DEBUG)
 						console.log("HTTP Code " + resp.statusCode + ": Redirection");
-					utils.request(resp.headers.location, method).then(res).catch(rej);
+					exports.request(resp.headers.location, method).then(res).catch(rej);
 				}
 				else
 					res(resp);
+			}).on("timeout", function() {
+				this.abort();
+				rej();
 			}).on("error", function(e) {
-				utils.updateConnection(false, e);
+				if(e.code === "EACCES")
+					exports.updateConnection(false, e);
 				rej(e);
 			}).end();
 		}
@@ -252,7 +261,7 @@ utils.request = function(url, method)
  * @param  {string} dest Destination file
  * @return {Promise}     Promise resolved when the download is finished
  */
-utils.download = function(url, dest)
+exports.download = function(url, dest)
 {
 	let time;
 	if(Constant.TIMING)
@@ -262,11 +271,11 @@ utils.download = function(url, dest)
 		return Promise.reject();
 
 	return new Promise(function(res, rej) {
-		utils.request(url).then(function(then) {
+		exports.request(url).then(function(then) {
 			if(then.statusCode >= 400)
 				rej(new Error("Error " + then.statusCode + (then.statusMessage ? (": " + then.statusMessage) : "")));
 			else
-				utils.rmkdir(path.dirname(dest), function(e) {
+				exports.rmkdir(path.dirname(dest), function(e) {
 					if(e)
 						rej(e);
 					else
@@ -299,9 +308,9 @@ utils.download = function(url, dest)
  * @return {Promise}    Promise resolved on server response
  *         @param {Array} size File size from the given URL
  */
-utils.sizeof = function(url)
+exports.sizeof = function(url)
 {
-	return utils.request(url, "HEAD").then(function(then) {
+	return exports.request(url, "HEAD").then(function(then) {
 		return Promise.resolve({"size": then.headers["content-length"]});
 	});
 };
@@ -310,11 +319,11 @@ utils.sizeof = function(url)
  * @param  {string}  url     Fetched URL
  * @return {Promise}         Promise resolved when the download is finished
  */
-utils.get = function(url)
+exports.get = function(url)
 {
 	let body = "";
 	return new Promise(function(res, rej) {
-		utils.request(url).then(function(then) {
+		exports.request(url).then(function(then) {
 			if(Constant.DEBUG)
 				console.log("Start getting data");
 
@@ -343,7 +352,7 @@ utils.get = function(url)
  * @param  {Boolean} stop		     Stop the loop when catching an error
  * @return {Promise}                 Promise resolved when the fetching is over
  */
-utils.for = function(object, callback, thisArg, stop = true)
+exports.for = function(object, callback, thisArg, stop = true)
 {
 	if(typeof object !== "object")
 		return Promise.reject(new TypeError("object must be a Object, a Map or an Array"));
@@ -400,7 +409,7 @@ utils.for = function(object, callback, thisArg, stop = true)
  * @return {string}      Promise resolved when the checksum is finished
  *         @param {string} sha256 SHA256 value
  */
-utils.sha256 = function(file)
+exports.sha256 = function(file)
 {
 	return new Promise(function(res, rej) {
 		const hash = crypto.createHash("sha256");
@@ -424,7 +433,7 @@ utils.sha256 = function(file)
  * @param  {Object} attributes    Attributes of the future node
  * @return {Node}                 Created node
  */
-utils.nodes = {
+exports.nodes = {
 	node(type, classList, text)
 	{
 		const node = document.createElement(type);
@@ -438,15 +447,15 @@ utils.nodes = {
 	},
 	div(classList, text)
 	{
-		return utils.nodes.node("div", classList, text);
+		return exports.nodes.node("div", classList, text);
 	},
 	span(classList, text)
 	{
-		return utils.nodes.node("span", classList, text);
+		return exports.nodes.node("span", classList, text);
 	},
 	input(type, classList, value = "")
 	{
-		const node = utils.nodes.node("input", classList);
+		const node = exports.nodes.node("input", classList);
 		node.type = type;
 		node.value = value;
 		return node;
@@ -476,7 +485,7 @@ utils.nodes = {
  * @param  {Function<string, string, int>} progress	Function executed after each download, with the data as the first argument, the file name as the second and the iteration as the third
  * @return {Promise<Array<string>>} 				Return the list of the failed downloads
  */
-utils.batch = function(srvlist, files, dir, progress)
+exports.batch = function(srvlist, files, dir, progress)
 {
 	const failed = [];
 
@@ -484,14 +493,14 @@ utils.batch = function(srvlist, files, dir, progress)
 		return Promise.resolve();
 
 	let cache;
-	return utils.for(files, function(file, idx, i) {
+	return exports.for(files, function(file, idx, i) {
 		let downloaded = false;
 		if(!cache)
-			return utils.for(srvlist, function(srv) {
+			return exports.for(srvlist, function(srv) {
 				if(downloaded)
 					return;
 
-				return utils.download(srv + "/" + file, path.join(dir, file)).then(function(data) {
+				return exports.download(srv + "/" + file, path.join(dir, file)).then(function(data) {
 					if(!cache)
 						cache = srv;
 					downloaded = true;
@@ -507,7 +516,7 @@ utils.batch = function(srvlist, files, dir, progress)
 				failed.push(file);
 			});
 		else
-			return utils.download(cache + file, path.join(dir, file)).then(function(data) {
+			return exports.download(cache + file, path.join(dir, file)).then(function(data) {
 				if(progress)
 					return progress(data, file, i);
 			}).catch(function(e) {
@@ -523,4 +532,4 @@ utils.batch = function(srvlist, files, dir, progress)
 	});
 };
 
-Object.assign(exports, utils);
+Object.assign(exports, exports);

@@ -56,6 +56,6 @@ module.exports = class Updater
 	}
 	static cancel(e)
 	{
-		return Utils.rmdir(Utils.required.path.join("tmp"), true).finally(() => {return Promise.reject()});
+		return Utils.rmdir(Utils.required.path.join("tmp"), true).finally(() => { return Promise.reject(); });
 	}
 };

@@ -34,7 +34,7 @@ module.exports = class Profile
 		for(const [key, patch] of this.#patch)
 		{
 			const arr = [...patch.dependencies];
-			for(const id of arr)
+			for(let id of arr)
 			{
 				if(id.indexOf("/") == -1)
 					id = patch.repo + "/" + id;
