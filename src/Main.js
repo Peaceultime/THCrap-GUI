@@ -18,6 +18,9 @@ let win, isUpdated, time;
 
 function createWindow()
 {
+	if(Utils.required.fs.existsSync(Utils.required.path.join("resources", "app")))
+		process.chdir(Utils.required.path.join("resources", "app"));
+
 	if(process.argv.includes("--updated"))
 		isUpdated = true;
 
@@ -36,7 +39,6 @@ function createWindow()
 			resizable: false,
 			webPreferences: {
 				nodeIntegration: true,
-				nodeIntegrationInWorker: true,
 				enableRemoteModule: false,
 				disableHtmlFullscreenWindowResize: true
 			}

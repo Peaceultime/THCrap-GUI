@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
+const child_process = require("child_process");
 
 function save(file, data)
 {
@@ -149,6 +150,10 @@ async function version(list)
 }
 async function build()
 {
+
+}
+async function deploy()
+{
 	console.log("Start");
 
 	const list = await process("src");
@@ -161,7 +166,11 @@ async function build()
 	try { await rmdir("src/thcrap/repos"); } catch(e) { console.error(e); }
 	try { await mkdir("src/thcrap/repos"); } catch(e) { console.error(e); }
 
+	const child = child_process.exec("npx electron-forge make");
+	child.stdout.on("data", console.log);
+	child.stderr.on("data", console.error);
+
 	console.log("End");
 }
 
-build();
+deploy();

@@ -13,7 +13,7 @@ module.exports = class Updater
 
 		let client, server;
 
-		return Utils.read(Utils.required.path.join("src", "version.js")).then(function(data) {
+		return Utils.read(Utils.required.path.join("version.js")).then(function(data) {
 			client = JSON.parse(data);
 			return Utils.for(Updater.#servers, (serv) => { if(!server) return Utils.get(serv + "/version.js").then((d) => server = JSON.parse(d)); }, undefined, false);
 		}, Updater.cancel).then(function() {
