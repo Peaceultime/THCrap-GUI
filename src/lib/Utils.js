@@ -133,14 +133,14 @@ exports.rmdir = function(dir, force = true)
 	};
 
 	if(!force)
-		return promised(path);
+		return promised(dir);
 	else
-		return exports.readdir(path).then(function(dir) {
+		return exports.readdir(dir).then(function(_dir) {
 			if(files.length === 0)
-				return promised(path);
+				return promised(dir);
 			else
 			{
-				return exports.for(files, function(file, k, i) {
+				return exports.for(_dir, function(file, k, i) {
 					file = path.join(dir, file);
 					return exports.lstat(file).then(function(s) {
 						if(s.isDirectory())
