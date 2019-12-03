@@ -141,16 +141,16 @@ async function process(dir)
 }
 async function version(list)
 {
-	console.log(list);
 	const obj = {};
+	const version = JSON.parse(await read("version.js")).version;
 	for(const file of list)
 		obj[file] = await sha(file);
 
-	await save("version.js", JSON.stringify(obj));
-}
-async function build()
-{
+	obj["version.js"] = version + 1;
 
+	console.log({version: version + 1, files: obj})
+
+	await save("version.js", JSON.stringify({version: version + 1, files: obj}));
 }
 async function deploy()
 {

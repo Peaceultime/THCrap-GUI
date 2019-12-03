@@ -9,6 +9,9 @@ module.exports = class Updater
 	static #latest = 0;
 	static update()
 	{
+		if(Constants.DEV)
+			return Promise.reject();
+
 		App.send("updating", Constants.STATE.SEARCHING);
 
 		let client, server;
@@ -17,12 +20,16 @@ module.exports = class Updater
 			client = JSON.parse(data);
 			return Utils.for(Updater.#servers, (serv) => { if(!server) return Utils.get(serv + "/version.js").then((d) => server = JSON.parse(d)); }, undefined, false);
 		}, Updater.cancel).then(function() {
-			if(server.version === Constants.VERSION)
-				return Promise.reject();
 			Updater.#latest = server.version;
+			if(Updater.#latest === client.version)
+				return Promise.reject();
 			for(const [path, sha] of Object.entries(server.files))
-				if(client[path] !== sha)
+			{
+				console.log(path, sha, client.files[path]);
+				if(client.files[path] !== sha)
 					Updater.#updatable.push(path);
+			}
+			console.log(client, server, Updater.#updatable);
 			if(Updater.#updatable.length === 0)
 				return Promise.reject();
 			else
@@ -51,7 +58,7 @@ module.exports = class Updater
 		}, undefined, false).then(function() {
 			return Utils.rmdir(Utils.required.path.join("tmp", "install"), true).catch(e => { if(e.code === "ENOENT") return Promise.resolve(); console.error("Can't delete 'tmp/install'", e); });
 		}).then(function() {
-			return Utils.rename(Utils.required.path.join("tmp", "" + Updater.#latest), Utils.required.path.join("test")).catch(e => console.error("Can't move 'tmp' to 'test'", e));
+			return Utils.rename(Utils.required.path.join("tmp", "" + Updater.#latest), Utils.required.path.join(".")).catch(e => console.error("Can't move 'tmp' to 'test'", e));
 		});
 	}
 	static cancel(e)
