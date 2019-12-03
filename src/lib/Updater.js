@@ -13,7 +13,7 @@ module.exports = class Updater
 
 		let client, server;
 
-		return Utils.read(Utils.required.path.join("src", "version.js")).then(function(data) {
+		return Utils.read(Utils.required.path.join("version.js")).then(function(data) {
 			client = JSON.parse(data);
 			return Utils.for(Updater.#servers, (serv) => { if(!server) return Utils.get(serv + "/version.js").then((d) => server = JSON.parse(d)); }, undefined, false);
 		}, Updater.cancel).then(function() {
@@ -34,7 +34,7 @@ module.exports = class Updater
 		App.send("updating", Constants.STATE.UPDATING_START, Updater.#updatable.length, "updating-crap");
 
 		return Utils.batch(Updater.#servers, Updater.#updatable.map(e => Updater.#latest + "/" + e), Utils.required.path.join("tmp"), () => { App.send("updating", Constants.STATE.UPDATING) }).then(function(failed) {
-			if(failed.length && failed.length !== 0)
+			if(failed !== undefined && failed.length !== undefined && failed.length !== 0)
 				return Updater.cancel();
 			return Utils.batch(Updater.#servers, [...Array(Updater.#latest - Constants.VERSION).keys()].map(i => (i + Constants.VERSION + 1) + "/install.js"), Utils.required.path.join("tmp", "install"));
 		}, function(e) {
@@ -49,9 +49,9 @@ module.exports = class Updater
 		return Utils.for([...Array(Updater.#latest - Constants.VERSION).keys()].map(i => (i + Constants.VERSION + 1)), function(version) {
 			return require(Utils.required.path.join("tmp", "install", version, "install"))(App, Utils);
 		}, undefined, false).then(function() {
-			return Utils.rmdir(Utils.required.path.join("tmp", "install"), true);
+			return Utils.rmdir(Utils.required.path.join("tmp", "install"), true).catch(e => { if(e.code === "ENOENT") return Promise.resolve(); console.error("Can't delete 'tmp/install'", e); });
 		}).then(function() {
-			return Utils.rename(Utils.required.path.join("tmp"), Utils.required.path.join("test"));
+			return Utils.rename(Utils.required.path.join("tmp", "" + Updater.#latest), Utils.required.path.join("test")).catch(e => console.error("Can't move 'tmp' to 'test'", e));
 		});
 	}
 	static cancel(e)

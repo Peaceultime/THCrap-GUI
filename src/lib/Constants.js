@@ -28,5 +28,5 @@ exports.STATE = {
 	NOCONNECTION: 4,
 	ERROR: 5
 }
-exports.DEBUG = true;
+exports.DEBUG = false;
 exports.TIMING = false;

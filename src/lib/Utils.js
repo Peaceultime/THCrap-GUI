@@ -106,7 +106,7 @@ exports.unlink = function(file)
 exports.rename = function(file, newFile)
 {
 	return new Promise(function(res, rej) {
-		fs.unlink(file, newFile, function(e) {
+		fs.rename(file, newFile, function(e) {
 			if(e)
 				rej(e);
 			else
@@ -395,7 +395,7 @@ exports.for = function(object, callback, thisArg, stop = true)
 				return loop();
 			}
 		} catch(e) {
-			if(!stop)
+			if(stop)
 				return Promise.reject(e);
 			index++;
 			return loop();
