@@ -4,7 +4,6 @@ const Repo = require("./Repo");
 
 module.exports = class PatchListPopup extends Popup
 {
-	static popup = null;
 	#node = null;
 	#repos = [];
 	#list = undefined;

@@ -25,7 +25,7 @@ exports.required = {
 };
 
 exports.connection = new EventEmitter();
-exports.status = null;
+exports.status = true;
 
 /**
  * Promisified version of writeFile

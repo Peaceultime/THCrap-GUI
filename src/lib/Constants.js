@@ -19,7 +19,7 @@ exports.SETTINGS = {
 	"console": false,
 	"dat_dump": false,
 	"multigame": false
-}
+};
 exports.STATE = {
 	SEARCHING: 0,
 	UPDATING_START: 1,
@@ -27,6 +27,7 @@ exports.STATE = {
 	LOADING: 3,
 	NOCONNECTION: 4,
 	ERROR: 5
-}
+};
 exports.DEBUG = false;
 exports.TIMING = false;
+exports.DEV = true;
