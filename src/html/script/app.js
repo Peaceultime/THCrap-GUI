@@ -14,15 +14,11 @@ let searchButton, downloadPopup, downloadedPatch;
 
 /**
  * Can't release without all these components
- * @todo Determine settings UI [Priority 8]
  * @todo Settings Popup [Priority 7]
- * @todo Fix patch loading [Priority max]
- * @todo Updater [Priority 8]
  *
  * Would be better to release with these components
  * @todo Tutorial [Priority 6]
  * @todo TutorialPopup [Priority 6]
- * @todo Handle no connection [Priority 4]
  * @todo Cache translations and settings in frontend [Priority 3]
  * @todo Error logging for download and things like that [Priority 2]
  */
