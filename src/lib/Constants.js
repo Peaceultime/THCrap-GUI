@@ -1,4 +1,3 @@
-exports.VERSION = 1;
 exports.GAME_DATA = {
 	"th06": {"jp": "東方紅魔郷", "en": "Embodiment of Scarlet Devil", "title": "Touhou 6"}, "th07": {"jp": "東方妖々夢", "en": "Perfect Cherry Blossom", "title": "Touhou 7"},
 	"th075": {"jp": "東方萃夢想", "en": "Immaterial and Missing Power", "title": "Touhou 7.5"}, "th08": {"jp": "東方永夜抄", "en": "Imperishable Night", "title": "Touhou 8"},
@@ -17,8 +16,7 @@ exports.SETTINGS = {
 	"lang": "en",
 	"first_repo": "https://mirrors.thpatch.net/nmlgc/",
 	"console": false,
-	"dat_dump": false,
-	"multigame": false
+	"dat_dump": false
 };
 exports.STATE = {
 	SEARCHING: 0,
@@ -30,4 +28,4 @@ exports.STATE = {
 };
 exports.DEBUG = false;
 exports.TIMING = false;
-exports.DEV = true;
+exports.DEV = false;
