@@ -51,7 +51,7 @@ module.exports = class Game
 		if(this.#custom)
 			actions.push({text: askTranslation("config"), fn: () => this.launch(false)});
 
-		actions.push({text: askTranslation("game-settings"), fn: () => new GameSettingsPopup().show()});
+		actions.push({text: askTranslation("game-settings"), fn: () => new GameSettingsPopup(this.#id).show()});
 		new ContextMenu(actions).show(e);
 	}
 	update(installed, custom)

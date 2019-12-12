@@ -41,5 +41,7 @@
 	"dump-dat-setting": "Dump dat",
 	"general-group-setting": "General",
 	"game-group-setting": "Games",
-	"game-settings": "Game settings"
+	"game-settings": "Game settings",
+	"single-game-found": "%s game found :",
+	"plural-game-found": "%s games found :"
 }

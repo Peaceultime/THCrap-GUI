@@ -833,3 +833,40 @@ html, body
     display: flex;
     justify-content: space-between;
 }
+.game-settings-title
+{
+    display: inline-flex;
+    transform: translateX(-8px);
+    padding-left: 16px;
+    border-bottom: 1px solid var(--white-color);
+    font-size: 18px;
+    align-items: baseline;
+}
+.game-settings-title div
+{
+    padding: 0 2px;
+}
+.game-settings-content
+{
+    width: 500px;
+    margin: 8px;
+    height: 40vh;
+    min-height: 300px;
+}
+@font-face
+{
+    font-family: "JK Gothic";
+    src: url("../JK-Gothic.ttf") format("truetype");
+}
+.jp-text
+{
+    font-family: "JK Gothic";
+}
+.game-settings-group
+{
+    margin: 8px;
+}
+.game-settings-text
+{
+    font-weight: 700;
+}

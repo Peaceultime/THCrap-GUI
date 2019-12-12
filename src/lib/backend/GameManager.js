@@ -64,7 +64,19 @@ const GameManager = module.exports = class GameManager
 			});
 		}
 		else if(request === "ask")
-			GameManager.ask();
+		{
+			if(!args)
+				GameManager.ask();
+			else
+			{
+				//Needs to be updated
+				const game = GameManager.#games.get(args);
+				if(game)
+					e.returnValue = [GameManager.#games.get(args).path];
+				else
+					e.returnValue = [];
+			}
+		}
 	}
 	static add(game)
 	{
