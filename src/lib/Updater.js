@@ -40,9 +40,9 @@ module.exports = class Updater
 	{
 		App.send("updating", Constants.STATE.UPDATING_START, Updater.#updatable.length, "updating-crap");
 
-		return Utils.batch(Updater.#servers, Updater.#updatable.map(e => Updater.#latest + "/" + e), Utils.required.path.join("tmp"), () => { App.send("updating", Constants.STATE.UPDATING) }).then(function(failed) {
+		return Utils.batch(Updater.#servers, Updater.#updatable.map(e => Updater.#latest + "/" + e), Utils.required.path.join("."), () => { App.send("updating", Constants.STATE.UPDATING) }).then(function(failed) {
 			if(failed !== undefined && failed.length !== undefined && failed.length !== 0)
-				return Updater.cancel();
+				return Promise.reject();
 			return Utils.batch(Updater.#servers, [...Array(Updater.#latest - Constants.VERSION).keys()].map(i => (i + Constants.VERSION + 1) + "/install.js"), Utils.required.path.join("tmp", "install"));
 		}, function(e) {
 			App.send("updating", Constants.STATE.ERROR);
@@ -57,12 +57,6 @@ module.exports = class Updater
 			return require(Utils.required.path.join("tmp", "install", version, "install"))(App, Utils);
 		}, undefined, false).then(function() {
 			return Utils.rmdir(Utils.required.path.join("tmp", "install"), true).catch(e => { if(e.code === "ENOENT") return Promise.resolve(); console.error("Can't delete 'tmp/install'", e); });
-		}).then(function() {
-			return Utils.rename(Utils.required.path.join("tmp", "" + Updater.#latest), Utils.required.path.join(".")).catch(e => console.error("Can't move 'tmp' to 'test'", e));
 		});
-	}
-	static cancel(e)
-	{
-		return Utils.rmdir(Utils.required.path.join("tmp"), true).finally(() => { return Promise.reject(); });
 	}
 };
