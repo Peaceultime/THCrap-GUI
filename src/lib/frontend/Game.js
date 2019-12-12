@@ -29,10 +29,9 @@ module.exports = class Game
 	{
 		if(!this.#installed)
 			return;
-		const multigame = askSetting("multigame");
-		if(!multigame && Game.launched)
+		if(Game.launched)
 			new SidePopup(askTranslation("already-launched"), {error: true});
-		else if((multigame || !Game.launched))
+		else
 		{
 			Game.launched = true;
 			ipcRenderer.send("game", "launch", {id: isGame ? this.#id : this.#id + "_custom", profileId: Profile.selected.name});
