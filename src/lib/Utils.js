@@ -471,7 +471,7 @@ exports.nodes = {
 	nochild(node)
 	{
 		const children = node.children, length = children.length;
-		for(let i = length - 1; i > 0; i--)
+		for(let i = length - 1; i >= 0; i--)
 			node.removeChild(children.item(i));
 		return node;
 	}

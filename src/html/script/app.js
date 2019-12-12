@@ -8,6 +8,7 @@ const SidePopup = require("../lib/frontend/SidePopup");
 const PatchListPopup = require("../lib/frontend/PatchListPopup");
 const ProfilePopup = require("../lib/frontend/ProfilePopup");
 const RenamePopup = require("../lib/frontend/RenamePopup");
+const SettingsPopup = require("../lib/frontend/SettingsPopup");
 
 const gameList = new Map();
 let searchButton, downloadPopup, downloadedPatch;

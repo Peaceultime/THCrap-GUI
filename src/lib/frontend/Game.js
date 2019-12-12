@@ -3,6 +3,7 @@ const ContextMenu = require("./ContextMenu");
 const Settings = require("../backend/Settings");
 const {ipcRenderer} = require("electron");
 const Utils = require("../Utils");
+const GameSettingsPopup = require("./GameSettingsPopup");
 
 module.exports = class Game
 {
@@ -51,7 +52,7 @@ module.exports = class Game
 		if(this.#custom)
 			actions.push({text: askTranslation("config"), fn: () => this.launch(false)});
 
-		actions.push({text: askTranslation("game-settings"), fn: function() {}});
+		actions.push({text: askTranslation("game-settings"), fn: () => new GameSettingsPopup().show()});
 		new ContextMenu(actions).show(e);
 	}
 	update(installed, custom)

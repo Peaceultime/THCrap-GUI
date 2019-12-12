@@ -50,7 +50,7 @@ function createWindow()
 			e.returnValue = Translation.translate(args);
 		});
 		ipcMain.on("settings", function(e, prop, value) {
-			if(value !== undefined)
+			if(value !== undefined && value !== null)
 				Settings.set(prop, value);
 			else
 				e.returnValue = Settings.get(prop);
