@@ -12,15 +12,19 @@ const {ipcMain, dialog} = require("electron");
  */
 const GameManager = module.exports = class GameManager
 {
-	static #games = new Map();
+	static #group = new Map();
+	static #default = new Map();
 	static load()
 	{
 		return Utils.read(Utils.required.path.join("data", "games.json")).then(function(data) {
 			const games = JSON.parse(data);
-			return Utils.for(games, function(path, id) {
-				const game = new Game(id, path);
-				GameManager.#games.set(game.id, game);
-				return game.check();
+			return Utils.for(games, function(group, id) {
+				GameManager.#group.set(id, []);
+				GameManager.#default.set(id, group.default);
+				return Utils.for(group.games, function(path, i) {
+					const game = new Game(id, path);
+					return GameManager.add(game);
+				}, undefined, false)
 			}, undefined, false);
 		}).catch(() => Promise.resolve()).finally(function() {
 			ipcMain.on("game", GameManager.bind);
@@ -31,8 +35,8 @@ const GameManager = module.exports = class GameManager
 	{
 		if(request === "launch")
 		{
-			if(GameManager.#games.has(args.id))
-				GameManager.#games.get(args.id).launch(ProfileManager.get(args.profileId));
+			if(GameManager.#group.has(args.id) && GameManager.#group.get(args.id).length > 0)
+				GameManager.get(args.id).launch(ProfileManager.get(args.profileId));
 		}
 		else if(request === "search")
 		{
@@ -48,21 +52,6 @@ const GameManager = module.exports = class GameManager
 					});
 			}
 		}
-		else if(request === "edit")
-		{
-			let game = GameManager.#games.get(args.id), promise;
-			if(!game)
-				promise = GameManager.add(new Game(args.id, args.path));
-			else
-				promise = game.change(args.path);
-
-			promise.then(function() {
-				e.reply("game", "reply", GameManager.#games.get(args.id).valid);
-				GameManager.save();
-			}).catch(function(err) {
-				e.reply("game", "reply", false, err);
-			});
-		}
 		else if(request === "ask")
 		{
 			if(!args)
@@ -70,9 +59,14 @@ const GameManager = module.exports = class GameManager
 			else
 			{
 				//Needs to be updated
-				const game = GameManager.#games.get(args);
-				if(game)
-					e.returnValue = [GameManager.#games.get(args).path];
+				const group = GameManager.#group.get(args);
+				if(group && group.length > 0)
+				{
+					const arr = [];
+					for(const game of group)
+						arr.push([game.path, ...game.data]);
+					e.returnValue = arr;
+				}
 				else
 					e.returnValue = [];
 			}
@@ -80,7 +74,18 @@ const GameManager = module.exports = class GameManager
 	}
 	static add(game)
 	{
-		GameManager.#games.set(game.id, game);
+		if(!GameManager.#group.has(game.id))
+		{
+			GameManager.#group.set(game.id, [game]);
+			GameManager.#default.set(game.id, 0);
+			console.log(GameManager.#group);
+		}
+		else
+		{
+			const group = GameManager.#group.get(game.id);
+			group.push(game)
+			GameManager.#group.set(game.id, group);
+		}
 		return game.check();
 	}
 	static search(dir)
@@ -90,14 +95,24 @@ const GameManager = module.exports = class GameManager
 	static save()
 	{
 		const obj = {};
-		for(const [id, value] of GameManager.#games)
-			if(value.valid)
-				obj[id] = value.path;
+		for(const [id, group] of GameManager.#group)
+		{
+			obj[id] = {};
+			obj[id].games = [];
+			obj[id].default = GameManager.#default.get(id);
+			if(group && group.length > 0)
+				for(const game of group)
+					if(game.valid)
+						obj[id].games.push(game.path);
+		}
 		return Utils.save(Utils.required.path.join("data", "games.json"), JSON.stringify(obj))
 	}
-	static get(id)
+	static get(id, index)
 	{
-		return GameManager.#games.get(id);
+		if(index === undefined)
+			index = GameManager.#default.get(id);
+		const group = GameManager.#group.get(id);
+		return group ? group[index] : undefined;
 	}
 	static ask()
 	{
@@ -106,9 +121,9 @@ const GameManager = module.exports = class GameManager
 		{
 			if(!Constants.GAME_DATA.hasOwnProperty(key))
 				continue;
-			const value = GameManager.#games.get(key);
-			const custom = GameManager.#games.get(key + "_custom");
-			obj[key] = value ? value.valid : false;
+			const game = GameManager.get(key);
+			const custom = GameManager.get(key + "_custom");
+			obj[key] = game ? game.valid : false;
 			obj[key + "_custom"] = custom ? custom.valid : false;
 		}
 		App.send("game", "update", obj);

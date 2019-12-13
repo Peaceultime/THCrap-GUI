@@ -367,6 +367,7 @@ html, body
     align-items: center;
     opacity: 1;
     transition: opacity .3s ease;
+    z-index: 999999;
 }
 .popup-foreground
 {
@@ -413,7 +414,7 @@ html, body
     align-items: center;
     padding: 0 8px;
 }
-.popup-close
+.popup-close, .game-settings-remove
 {
     width: 18px;
     height: 18px;
@@ -424,7 +425,7 @@ html, body
     margin-left: 12px;
     position: relative;
 }
-.popup-close:before, .popup-close:after
+.popup-close:before, .popup-close:after, .game-settings-remove:before, .game-settings-remove:after
 {
     content: "";
     background-color: var(--white-color);
@@ -434,11 +435,11 @@ html, body
     top: 8px;
     left: 2px;
 }
-.popup-close:before
+.popup-close:before, .game-settings-remove:before
 {
     transform: rotate(-45deg);
 }
-.popup-close:after
+.popup-close:after, .game-settings-remove:after
 {
     transform: rotate(45deg);
 }
@@ -868,5 +869,51 @@ html, body
 }
 .game-settings-text
 {
-    font-weight: 700;
+    font-family: "Segoe UI";
+}
+.game-settings-game-line
+{
+    display: flex;
+    align-items: center;
+    font-size: .9em;
+    position: relative;
+    padding: 0 4px;
+}
+.game-line-path, .game-line-version, .game-line-type
+{
+    margin: 0 8px;
+}
+.game-line-path
+{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    direction: rtl;
+}
+.game-settings-radio
+{
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--white-color);
+    border-radius: 50%;
+    position: absolute;
+    left: -2px;
+}
+.game-settings-radio.selected:before
+{
+    content: "";
+    width: 8px;
+    height: 8px;
+    background-color: var(--white-color);
+    border-radius: 50%;
+    transform: translate(2px, 2px);
+    display: block;
+}
+.game-settings-remove
+{
+    transform: scale(0.8);
+    margin: 0;
+    position: absolute;
+    right: -8px;
+    top: 3px;
 }

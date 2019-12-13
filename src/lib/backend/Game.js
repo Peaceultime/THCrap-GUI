@@ -11,11 +11,11 @@ module.exports = class Game
 	#path = "";
 	#id = null;
 	#valid = false;
-	constructor(id, path, valid = false)
+	#data = [];
+	constructor(id, path)
 	{
 		this.#path = path;
 		this.#id = id;
-		this.#valid = valid;
 	}
 	check()
 	{
@@ -26,11 +26,11 @@ module.exports = class Game
 		return Utils.lstat(path).then(function(stat) {
 			if(stat.isFile() && PatchManager.sizes[stat.size])
 				return Utils.sha256(path).then(function(sha) {
-					let data = PatchManager.hashes[sha];
-					return data && data[0] === id;
+					return PatchManager.hashes[sha];
 				});
-		}).then(function(valid) {
-			this.#valid = valid;
+		}).then(function(data) {
+			this.#valid = data[0] === id;
+			this.#data = data;
 		}.bind(this)).catch(console.error);
 	}
 	change(path)
@@ -109,5 +109,9 @@ module.exports = class Game
 	get infos()
 	{
 		return Constants.GAME_DATA[this.#id];
+	}
+	get data()
+	{
+		return this.#data;
 	}
 }
