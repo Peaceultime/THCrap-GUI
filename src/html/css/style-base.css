@@ -917,3 +917,25 @@ html, body
     right: -8px;
     top: 3px;
 }
+.setting-flex {
+    display: flex;
+    align-items: center;
+}
+
+.setting-button.setting-reload {
+    width: 16px;
+    height: 16px;
+    padding: 2px;
+    margin-left: 16px;
+}
+
+.setting-button.setting-reload:before {
+    border: 1px solid var(--white-color);
+    border-bottom-color: transparent;
+    content: "";
+    display: block;
+    transform: translate(1px, 1px);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}

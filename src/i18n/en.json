@@ -1,7 +1,6 @@
 {
 	"not-installed": "This game isn't installed yet",
 	"not-patchable": "The selected game isn't patchable",
-	"already-launched": "A game is already running",
 	"no-profile": "No profile selected",
 	"game-launched": "The game is running",
 	"search-games": "Search games",
@@ -16,7 +15,7 @@
 	"play": "Play",
 	"config": "Launch configurator",
 	"game-settings": "Game settings",
-	"search-title": "Select a directory",
+	"search-title": "Select a folder",
 	"found-game": "Found %s",
 	"game-config": "configurator",
 	"download-patch": "Downloading %s,\n%s",

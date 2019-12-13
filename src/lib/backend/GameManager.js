@@ -101,7 +101,7 @@ const GameManager = module.exports = class GameManager
 		{
 			const group = GameManager.#group.get(game.id);
 			if(group.findIndex(e => e.path === game.path) > -1)
-				return Promise.reject();
+				return Promise.resolve();
 			group.push(game)
 			GameManager.#group.set(game.id, group);
 		}
@@ -161,7 +161,7 @@ function search(file, reg)
 				{
 					GameManager.add(new Game(reg.hashes[sha][0], file, true)).then(function() {
 						App.send("game", "search", {found: reg.hashes[sha][0]});
-					}).catch(e => {});
+					}).catch(console.error);
 				}
 			});
 		}

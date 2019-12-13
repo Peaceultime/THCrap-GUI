@@ -46,8 +46,13 @@ function createWindow()
 
 		win.webContents.once("dom-ready", update);
 
-		ipcMain.on("translate", function(e, args) {
-			e.returnValue = Translation.translate(args);
+		ipcMain.on("translate", function(e, request, args) {
+			if(request === "translate")
+				e.returnValue = Translation.translate(args);
+			else if(request === "reload")
+				Translation.load(Settings.get("lang")).then(function() {
+					e.reply("translate");
+				});
 		});
 		ipcMain.on("settings", function(e, prop, value) {
 			if(value !== undefined && value !== null)

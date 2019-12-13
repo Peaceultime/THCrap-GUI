@@ -20,7 +20,7 @@ function tools()
 }
 function askTranslation(trid) //Synchronized
 {
-	return ipcRenderer.sendSync("translate", trid);
+	return ipcRenderer.sendSync("translate", "translate", trid);
 }
 function askSetting(prop) //Synchronized
 {

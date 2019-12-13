@@ -8,14 +8,23 @@ module.exports = class SettingsPopup extends Popup
 {
 	#groups = [];
 	#languages = [
-		{text: "English", value: "en"}
+		{text: "English", value: "en"},
+		{text: "Français", value: "fr"}
 	]
 	constructor()
 	{
 		super(askTranslation("settings-popup"));
 
 		//General settings
-		const language = this.dropdown(askTranslation("language-setting"), this.#languages, this.#languages.findIndex(e => e.value == askSetting("lang")), lang => ipcRenderer.send("settings", "lang", lang));
+		const reload = Utils.nodes.div(["setting-button", "setting-reload"]);
+		reload.addEventListener("click", function() {
+			ipcRenderer.send("translate", "reload");
+			ipcRenderer.once("translate", function() {
+				this.hide();
+				new SettingsPopup().show();
+			}.bind(this));
+		}.bind(this));
+		const language = Utils.nodes.children(Utils.nodes.div("setting-flex"), [this.dropdown(askTranslation("language-setting"), this.#languages, this.#languages.findIndex(e => e.value == askSetting("lang")), lang => ipcRenderer.send("settings", "lang", lang)), reload]);
 		const thcrap_console = this.checkbox(askTranslation("console-setting"), askSetting("console"), bool => ipcRenderer.send("settings", "console", bool));
 		const dat_dump = this.checkbox(askTranslation("dump-dat-setting"), askSetting("dat_dump"), bool => ipcRenderer.send("settings", "dat_dump", bool));
 		const repo = this.text(askTranslation("first-repo-setting"), askSetting("first_repo"), text => ipcRenderer.send("settings", "first_repo", text));
