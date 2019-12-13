@@ -40,17 +40,14 @@ const GameManager = module.exports = class GameManager
 		}
 		else if(request === "search")
 		{
-			if(!args)
-			{
-				const returned = dialog.showOpenDialog({title: Translation.translate("search-title"), properties: ["openDirectory"]});
-				if(returned && returned.then)
-					returned.then(function(result) {
-						if(result.cancelled)
-							return;
+			const returned = dialog.showOpenDialog({title: Translation.translate("search-title"), properties: ["openDirectory"]});
+			if(returned && returned.then)
+				returned.then(function(result) {
+					if(result.cancelled)
+						return;
 
-						GameManager.search(result.filePaths[0]);
-					});
-			}
+					GameManager.search(result.filePaths[0]);
+				});
 		}
 		else if(request === "ask")
 		{
@@ -65,10 +62,30 @@ const GameManager = module.exports = class GameManager
 					const arr = [];
 					for(const game of group)
 						arr.push([game.path, ...game.data]);
-					e.returnValue = arr;
+					e.returnValue = {default: GameManager.#default.get(args), games: arr};
 				}
 				else
-					e.returnValue = [];
+					e.returnValue = {default: 0, games: []};
+			}
+		}
+		else if(request === "default")
+		{
+			if(GameManager.#group.has(args.id) && GameManager.#group.get(args.id).length > 0 && GameManager.#group.get(args.id)[args.index])
+			{
+				GameManager.#default.set(args.id, args.index);
+				GameManager.save();
+			}
+		}
+		else if(request === "remove")
+		{
+			if(GameManager.#group.has(args.id) && GameManager.#group.get(args.id).length > 0 && GameManager.#group.get(args.id)[args.index])
+			{
+				if(args.index === GameManager.#default.get(args.id))
+					GameManager.#default.set(args.id, 0);
+				const group = GameManager.#group.get(args.id);
+				group.splice(args.index, 1);
+				GameManager.#group.set(args.id, group);
+				GameManager.save();
 			}
 		}
 	}
@@ -83,6 +100,8 @@ const GameManager = module.exports = class GameManager
 		else
 		{
 			const group = GameManager.#group.get(game.id);
+			if(group.findIndex(e => e.path === game.path) > -1)
+				return Promise.reject();
 			group.push(game)
 			GameManager.#group.set(game.id, group);
 		}
@@ -140,8 +159,9 @@ function search(file, reg)
 			return Utils.sha256(file).then(function(sha) {
 				if(reg.hashes[sha])
 				{
-					App.send("game", "search", {found: reg.hashes[sha][0]});
-					GameManager.add(new Game(reg.hashes[sha][0], file, true));
+					GameManager.add(new Game(reg.hashes[sha][0], file, true)).then(function() {
+						App.send("game", "search", {found: reg.hashes[sha][0]});
+					}).catch(e => {});
 				}
 			});
 		}
@@ -150,7 +170,10 @@ function search(file, reg)
 function init(path, reg)
 {
 	if(!path || !reg || !reg.hashes || !reg.sizes)
-		return GameManager.ask();
+	{
+		GameManager.ask();
+		return Promise.resolve();
+	}
 
 	App.send("game", "search", {start: true});
 	const list = [path];
@@ -168,5 +191,5 @@ function init(path, reg)
 				App.send("game", "search", {end: true});
 		});
 	};
-	return loop(path);
+	return loop(path).catch(console.error);
 }
