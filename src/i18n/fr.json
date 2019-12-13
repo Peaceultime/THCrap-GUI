@@ -42,5 +42,7 @@
 	"game-group-setting": "Jeux",
 	"game-settings": "Paramètres du jeu",
 	"single-game-found": "%s jeu trouvé :",
-	"plural-game-found": "%s jeux trouvés :"
+	"plural-game-found": "%s jeux trouvés :",
+	"patch-list": "Liste des patchs",
+	"change-profile": "Changer de profil"
 }

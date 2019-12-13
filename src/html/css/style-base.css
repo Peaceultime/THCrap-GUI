@@ -176,7 +176,7 @@ html, body
     top: 0;
     bottom: 0;
     left: 50px;
-    width: 120px;
+    width: 250px;
     display: flex;
     align-items: center;
 }
@@ -186,9 +186,7 @@ html, body
     height: 24px;
 }
 .floating-button:hover
-{
-    width: 180px;
-}
+{width: 230px;}
 
 .floating-button .icon
 {
@@ -917,19 +915,21 @@ html, body
     right: -8px;
     top: 3px;
 }
-.setting-flex {
+.setting-flex
+{
     display: flex;
     align-items: center;
 }
-
-.setting-button.setting-reload {
+.setting-button.setting-reload
+{
     width: 16px;
     height: 16px;
     padding: 2px;
     margin-left: 16px;
+    opacity: 0;
 }
-
-.setting-button.setting-reload:before {
+.setting-button.setting-reload:before
+{
     border: 1px solid var(--white-color);
     border-bottom-color: transparent;
     content: "";
@@ -938,4 +938,19 @@ html, body
     width: 12px;
     height: 12px;
     border-radius: 50%;
+}
+.setting-button.setting-reload:after
+{
+    border: 1px solid var(--white-color);
+    border-top-color: transparent;
+    border-right-color: transparent;
+    content: "";
+    display: block;
+    transform: translate(11px, -6px);
+    width: 4px;
+    height: 4px;
+}
+.setting-button.setting-reload.show
+{
+    opacity: 1;
 }

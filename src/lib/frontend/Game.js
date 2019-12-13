@@ -30,7 +30,7 @@ module.exports = class Game
 		if(!this.#installed)
 			return;
 		if(Game.launched)
-			new SidePopup(askTranslation("already-launched"), {error: true});
+			new SidePopup("already-launched", {error: true});
 		else
 		{
 			Game.launched = true;
@@ -58,7 +58,7 @@ module.exports = class Game
 	{
 		const change = installed !== undefined && this.#installed !== installed;
 		if(change && !installed)
-			this.warning(askTranslation("not-installed"));
+			this.warning("not-installed");
 		else if(change && installed)
 			this.warning();
 		if(installed !== undefined)
@@ -78,7 +78,8 @@ module.exports = class Game
 
 		if(msg)
 		{
-			this.#warning = Utils.nodes.div(["warning", "game-warning"], msg);
+			this.#warning = Utils.nodes.div(["warning", "game-warning"], askTranslation(msg));
+			this.#warning.setAttribute("trid", msg)
 			this.#node.append(this.#warning);
 		}
 	}

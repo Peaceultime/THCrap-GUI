@@ -21,10 +21,11 @@ module.exports = class SettingsPopup extends Popup
 			ipcRenderer.send("translate", "reload");
 			ipcRenderer.once("translate", function() {
 				this.hide();
+				translateAll();
 				new SettingsPopup().show();
 			}.bind(this));
 		}.bind(this));
-		const language = Utils.nodes.children(Utils.nodes.div("setting-flex"), [this.dropdown(askTranslation("language-setting"), this.#languages, this.#languages.findIndex(e => e.value == askSetting("lang")), lang => ipcRenderer.send("settings", "lang", lang)), reload]);
+		const language = Utils.nodes.children(Utils.nodes.div("setting-flex"), [this.dropdown(askTranslation("language-setting"), this.#languages, this.#languages.findIndex(e => e.value == askSetting("lang")), lang => { ipcRenderer.send("settings", "lang", lang); reload.classList.add("show"); }), reload]);
 		const thcrap_console = this.checkbox(askTranslation("console-setting"), askSetting("console"), bool => ipcRenderer.send("settings", "console", bool));
 		const dat_dump = this.checkbox(askTranslation("dump-dat-setting"), askSetting("dat_dump"), bool => ipcRenderer.send("settings", "dat_dump", bool));
 		const repo = this.text(askTranslation("first-repo-setting"), askSetting("first_repo"), text => ipcRenderer.send("settings", "first_repo", text));

@@ -10,6 +10,7 @@ module.exports = class SidePopup
 	#loadingNode = null;
 	#error = false;
 	#deleted = false;
+	#translate = true;
 	static #max = 5;
 	static #popups = [];
 	static #popupContainer = null;
@@ -51,6 +52,7 @@ module.exports = class SidePopup
 		else
 			this.#duration = opts.duration || 5000;
 		this.#error = opts.error;
+		this.#translate = opts.translate !== undefined ? opts.translate : true;
 
 		this.#node = document.createElement("div");
 		this.#node.addEventListener("click", this.fade.bind(this));
@@ -60,7 +62,13 @@ module.exports = class SidePopup
 
 		this.#textNode = document.createElement("div");
 		this.#textNode.classList.add("side-text");
-		this.#textNode.textContent = text;
+		if(this.#translate)
+		{
+			this.#textNode.textContent = askTranslation(text);
+			this.#textNode.setAttribute("trid", text);
+		}
+		else
+			this.#textNode.textContent = text;
 
 		this.#loadingNode = document.createElement("div");
 		this.#loadingNode.classList.add("side-loading");
@@ -83,7 +91,15 @@ module.exports = class SidePopup
 		if(this.#deleted)
 			return;
 		if(text && text !== "")
-			this.#textNode.textContent = text;
+		{
+			if(this.#translate)
+			{
+				this.#textNode.textContent = askTranslation(text);
+				this.#textNode.setAttribute("trid", text);
+			}
+			else
+				this.#textNode.textContent = text;
+		}
 		if(load && this.#loading)
 		{
 			this.#loadValue += load;

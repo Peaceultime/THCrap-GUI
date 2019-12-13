@@ -104,7 +104,7 @@ function patchBinding(e, request, args)
 	{
 		downloadedPatch = Patch.get(args.patch);
 		if(args.length !== 0)
-			downloadPopup = new SidePopup(askTranslation("download-patch").replace("%s", downloadedPatch.fullId).replace("%s", args.file), {loading: args.length - 1});
+			downloadPopup = new SidePopup(askTranslation("download-patch").replace("%s", downloadedPatch.fullId).replace("%s", args.file), {loading: args.length - 1, translate: false});
 	}
 }
 
