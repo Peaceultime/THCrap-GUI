@@ -26,17 +26,19 @@ let searchButton, downloadPopup, downloadedPatch;
 
 function profiles()
 {
-	popup = new ProfilePopup();
-	popup.show();
+	new ProfilePopup().show();
 }
 function patches()
 {
-	popup = new PatchListPopup();
-	popup.show();
+	new PatchListPopup().show();
 }
 function search()
 {
 	ipcRenderer.send("game", "search");
+}
+function settings()
+{
+	new SettingsPopup().show();
 }
 function gameBinding(e, request, args)
 {
@@ -58,7 +60,7 @@ function gameBinding(e, request, args)
 			const custom = args.found.endsWith("_custom");
 			gameList.get(args.found.replace("_custom", "")).update(!custom ? true : undefined, custom ? true : undefined);
 			const text = Constants.GAME_DATA[args.found.replace("_custom", "")].title + (args.found.endsWith("_custom") ? (" " + askTranslation("game-config")) : "");
-			new SidePopup(askTranslation("found-game").replace("%s", text));
+			new SidePopup(askTranslation("found-game").replace("%s", text), {translate: false});
 		}
 		else if(args.error)
 			console.log(args.error);

@@ -927,6 +927,8 @@ html, body
     padding: 2px;
     margin-left: 16px;
     opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease;
 }
 .setting-button.setting-reload:before
 {
@@ -953,4 +955,5 @@ html, body
 .setting-button.setting-reload.show
 {
     opacity: 1;
+    visibility: visible;
 }

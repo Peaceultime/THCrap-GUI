@@ -43,6 +43,8 @@
 	"game-settings": "Game settings",
 	"single-game-found": "%s game found :",
 	"plural-game-found": "%s games found :",
+	"single-config-found": "%s config found :",
+	"plural-config-found": "%s configs found :",
 	"patch-list": "Patch list",
 	"change-profile": "Change profile"
 }

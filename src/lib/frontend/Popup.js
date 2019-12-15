@@ -23,7 +23,7 @@ module.exports = class Popup
 		document.appBody.append(this.#background);
 		this._promise = new Promise(function(res, rej) {
 			this.#close.addEventListener("click", rej, {once: true});
-			this.#background.addEventListener("click", e => { if(e.path[0] === this.#background) rej(); }, {once: true});
+			this.#background.addEventListener("click", e => { if(e.path[0] === this.#background) rej(); });
 		}.bind(this)).catch(function() {}).finally(this.hide.bind(this));
 	}
 	hide()
