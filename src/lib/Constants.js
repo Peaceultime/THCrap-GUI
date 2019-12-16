@@ -28,4 +28,4 @@ exports.STATE = {
 };
 exports.DEBUG = false;
 exports.TIMING = false;
-exports.DEV = true;
+exports.DEV = false;

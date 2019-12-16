@@ -14,13 +14,9 @@ const gameList = new Map();
 let searchButton, downloadPopup, downloadedPatch;
 
 /**
- * Can't release without all these components
- * @todo Settings Popup [Priority 7]
- *
  * Would be better to release with these components
  * @todo Tutorial [Priority 6]
  * @todo TutorialPopup [Priority 6]
- * @todo Cache translations and settings in frontend [Priority 3]
  * @todo Error logging for download and things like that [Priority 2]
  */
 
@@ -59,8 +55,10 @@ function gameBinding(e, request, args)
 		{
 			const custom = args.found.endsWith("_custom");
 			gameList.get(args.found.replace("_custom", "")).update(!custom ? true : undefined, custom ? true : undefined);
-			const text = Constants.GAME_DATA[args.found.replace("_custom", "")].title + (args.found.endsWith("_custom") ? (" " + askTranslation("game-config")) : "");
-			new SidePopup(askTranslation("found-game").replace("%s", text), {translate: false});
+			if(custom)
+				new SidePopup(askTranslation("found-config").replace("%s", Constants.GAME_DATA[args.found.replace("_custom", "")].title), {translate: false});
+			else
+				new SidePopup(askTranslation("found-game").replace("%s", Constants.GAME_DATA[args.found].title), {translate: false});
 		}
 		else if(args.error)
 			console.log(args.error);

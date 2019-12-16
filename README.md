@@ -1,7 +1,7 @@
-# THCrap-GUI
+# Touhou Patcher & Launcher
 This application is a rework of the old Thcrap Configure program. It allow you to setup profiles and
 launch the Touhou Games with patches like translation or reskin. This software is built using
-Electron for Node.js. The software is suppose to call the Thcrap software to patch and launch the
+Electron for Node.js. The software call the Thcrap software to patch and launch the
 games.
 
 ## Contributions

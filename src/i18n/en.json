@@ -17,7 +17,7 @@
 	"game-settings": "Game settings",
 	"search-title": "Select a folder",
 	"found-game": "Found %s",
-	"game-config": "configurator",
+	"found-config": "Found %s configurator",
 	"download-patch": "Downloading %s,\n%s",
 	"profile-select": "Select",
 	"profile-unselect": "Unselect",
