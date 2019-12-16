@@ -41,8 +41,10 @@
 	"general-group-setting": "General",
 	"game-group-setting": "Jeux",
 	"game-settings": "Paramètres du jeu",
-	"single-game-found": "%s config trouvé :",
-	"plural-game-found": "%s configs trouvés :",
+	"single-game-found": "%s jeu trouvé :",
+	"plural-game-found": "%s jeux trouvés :",
+	"single-config-found": "%s config trouvé :",
+	"plural-config-found": "%s configs trouvés :",
 	"patch-list": "Liste des patchs",
 	"change-profile": "Changer de profil"
 }
