@@ -5,6 +5,7 @@ const App = require("./App");
 module.exports = class Updater
 {
 	static #servers = ["https://aspect-code.net/static/download/touhou_launcher/"];
+	static #client = [];
 	static #updatable = [];
 	static #latest = 0;
 	static update()
@@ -14,22 +15,18 @@ module.exports = class Updater
 
 		App.send("updating", Constants.STATE.SEARCHING);
 
-		let client, server;
+		let server;
 
 		return Utils.read(Utils.required.path.join("version.js")).then(function(data) {
-			client = JSON.parse(data);
+			Updater.#client = JSON.parse(data);
 			return Utils.for(Updater.#servers, (serv) => { if(!server) return Utils.get(serv + "/version.js").then((d) => server = JSON.parse(d)); }, undefined, false);
 		}, Updater.cancel).then(function() {
 			Updater.#latest = server.version;
-			if(Updater.#latest === client.version)
+			if(Updater.#latest === Updater.#client.version)
 				return Promise.reject();
 			for(const [path, sha] of Object.entries(server.files))
-			{
-				console.log(path, sha, client.files[path]);
-				if(client.files[path] !== sha)
+				if(Updater.#client.files[path] !== sha)
 					Updater.#updatable.push(path);
-			}
-			console.log(client, server, Updater.#updatable);
 			if(Updater.#updatable.length === 0)
 				return Promise.reject();
 			else
@@ -40,10 +37,8 @@ module.exports = class Updater
 	{
 		App.send("updating", Constants.STATE.UPDATING_START, Updater.#updatable.length, "updating-crap");
 
-		return Utils.batch(Updater.#servers, Updater.#updatable.map(e => Updater.#latest + "/" + e), Utils.required.path.join("."), () => { App.send("updating", Constants.STATE.UPDATING) }).then(function(failed) {
-			if(failed !== undefined && failed.length !== undefined && failed.length !== 0)
-				return Promise.reject();
-			return Utils.batch(Updater.#servers, [...Array(Updater.#latest - Constants.VERSION).keys()].map(i => (i + Constants.VERSION + 1) + "/install.js"), Utils.required.path.join("tmp", "install"));
+		return Utils.batch(Updater.#servers.map(e => e + "/" + Updater.#latest + "/"), Updater.#updatable, Utils.required.path.join("."), () => { App.send("updating", Constants.STATE.UPDATING); }).then(function(failed) {
+			return Utils.batch(Updater.#servers, [...Array(Updater.#latest - Updater.#client.version).keys()].map(i => (i + Updater.#client.version + 1) + "/install.js"), "install", console.log);
 		}, function(e) {
 			App.send("updating", Constants.STATE.ERROR);
 			return Promise.reject();
@@ -53,10 +48,10 @@ module.exports = class Updater
 	}
 	static install()
 	{
-		return Utils.for([...Array(Updater.#latest - Constants.VERSION).keys()].map(i => (i + Constants.VERSION + 1)), function(version) {
-			return require(Utils.required.path.join("tmp", "install", version, "install"))(App, Utils);
+		return Utils.for([...Array(Updater.#latest - Updater.#client.version).keys()].map(i => (i + Updater.#client.version + 1)), function(version) {
+			return require(Utils.required.path.join("install", version, "install"))(App);
 		}, undefined, false).then(function() {
-			return Utils.rmdir(Utils.required.path.join("tmp", "install"), true).catch(e => { if(e.code === "ENOENT") return Promise.resolve(); console.error("Can't delete 'tmp/install'", e); });
+			return Utils.rmdir(Utils.required.path.join("install"), true).catch(e => { if(e.code === "ENOENT") return Promise.resolve(); console.error("Can't delete 'install'", e); });
 		});
 	}
 };
