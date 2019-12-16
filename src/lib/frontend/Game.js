@@ -63,7 +63,7 @@ module.exports = class Game
 			this.warning();
 		if(installed !== undefined)
 			this.#installed = installed;
-		this.#custom = custom === undefined ? false : custom;
+		this.#custom = custom === undefined ? this.#custom : custom;
 	}
 	warning(msg, time)
 	{

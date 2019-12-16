@@ -71,7 +71,7 @@ module.exports = class GameSettingsPopup extends Popup
 					ipcRenderer.send("game", "remove", {id: id + "_custom", index: i});
 					Utils.nodes.children(Utils.nodes.nochild(configGroup), [...buildConfig().children]);
 					if(askConfig.games.length === 1)
-						gameList.get(id).update(false);
+						gameList.get(id).update(undefined, false);
 				}, {once: true});
 				config.push(node);
 			}

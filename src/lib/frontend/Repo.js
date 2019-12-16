@@ -52,11 +52,8 @@ module.exports = class Repo
 	}
 	get head()
 	{
-		if(!this.#head)
-		{
-			this.#head = Utils.nodes.children(Utils.nodes.div("repo-header"), [Utils.nodes.div("repo-text", askTranslation("repo")), Utils.nodes.div("repo-name", this.#name), Utils.nodes.div("repo-patch", (this.#patch.size > 1 ? askTranslation("plural-patch") : askTranslation("single-patch")).replace("%s", this.#patch.size))]);
-			this.#head.addEventListener("click", this.toggle.bind(this));
-		}
+		this.#head = Utils.nodes.children(Utils.nodes.div("repo-header"), [Utils.nodes.div("repo-text", askTranslation("repo")), Utils.nodes.div("repo-name", this.#name), Utils.nodes.div("repo-patch", (this.#patch.size > 1 ? askTranslation("plural-patch") : askTranslation("single-patch")).replace("%s", this.#patch.size))]);
+		this.#head.addEventListener("click", this.toggle.bind(this));
 		return this.#head;
 	}
 	get node()
