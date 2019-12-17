@@ -29,7 +29,8 @@ module.exports = class SettingsPopup extends Popup
 		const thcrap_console = this.checkbox(askTranslation("console-setting"), askSetting("console"), bool => ipcRenderer.send("settings", "console", bool));
 		const dat_dump = this.checkbox(askTranslation("dump-dat-setting"), askSetting("dat_dump"), bool => ipcRenderer.send("settings", "dat_dump", bool));
 		const repo = this.text(askTranslation("first-repo-setting"), askSetting("first_repo"), text => ipcRenderer.send("settings", "first_repo", text));
-		this.#groups.push(this.group(askTranslation("general-group-setting"), [language, thcrap_console, dat_dump, repo]))
+		const update_patch = this.checkbox(askTranslation("update-patch-setting"), askSetting("update_patch"), bool => ipcRenderer.send("settings", "update_patch", bool));
+		this.#groups.push(this.group(askTranslation("general-group-setting"), [language, thcrap_console, dat_dump, repo, update_patch]))
 
 		//Games settings
 		const games = [];

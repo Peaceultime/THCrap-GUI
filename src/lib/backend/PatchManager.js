@@ -16,7 +16,8 @@ module.exports = class PatchManager
 		//Download missing repos and patches from Internet, then
 		//Store every patch and concat every version files from the patches
 		return PatchManager.loadRepos().then(function() {
-			return PatchManager.fetch(Settings.get("first_repo"));
+			if(Settings.get("update_patch"))
+				return PatchManager.fetch(Settings.get("first_repo")).then(() => Utils.for(PatchManager.#repos, repo => repo.download));
 		}).finally(function() {
 			for(const [key, repo] of PatchManager.#repos)
 			{
@@ -84,12 +85,9 @@ module.exports = class PatchManager
 							neighbors.push(n);
 					}
 
-				return Promise.allSettled([
-					repo.download(),
-					Utils.save(Utils.required.path.join("src", "thcrap", "repos", repo.id, "repo.js"), data)
-				]);
+				return Utils.save(Utils.required.path.join("src", "thcrap", "repos", repo.id, "repo.js"), data);
 			});
-		}.bind(PatchManager);
+		};
 
 		const loop = function(url) {
 			return new Promise(function(res, rej) {

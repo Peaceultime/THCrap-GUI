@@ -38,6 +38,7 @@
 	"first-repo-setting": "First fetched repo",
 	"console-setting": "Show THCRAP console",
 	"dump-dat-setting": "Dump dat",
+	"update-patch-setting": "Update patches on start",
 	"general-group-setting": "General",
 	"game-group-setting": "Games",
 	"game-settings": "Game settings",

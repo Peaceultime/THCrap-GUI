@@ -16,7 +16,8 @@ exports.SETTINGS = {
 	"lang": "en",
 	"first_repo": "https://mirrors.thpatch.net/nmlgc/",
 	"console": false,
-	"dat_dump": false
+	"dat_dump": false,
+	"update_patch": true
 };
 exports.STATE = {
 	SEARCHING: 0,

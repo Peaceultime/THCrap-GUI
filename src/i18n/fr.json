@@ -38,6 +38,7 @@
 	"first-repo-setting": "Premier repertoire parcouru",
 	"console-setting": "Afficher la console THCRAP",
 	"dump-dat-setting": "Dump dat",
+	"update-patch-setting": "Mettre à jour les patchs au démarrage",
 	"general-group-setting": "General",
 	"game-group-setting": "Jeux",
 	"game-settings": "Paramètres du jeu",
