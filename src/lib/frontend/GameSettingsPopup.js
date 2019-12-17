@@ -52,7 +52,6 @@ module.exports = class GameSettingsPopup extends Popup
 		const buildConfig = function()
 		{
 			const askConfig = ipcRenderer.sendSync("game", "ask", id + "_custom");
-			console.log(askConfig);
 			const config = [];
 			for(const i in askConfig.games)
 			{
