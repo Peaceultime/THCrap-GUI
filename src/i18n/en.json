@@ -47,5 +47,6 @@
 	"single-config-found": "%s config found :",
 	"plural-config-found": "%s configs found :",
 	"patch-list": "Patch list",
-	"change-profile": "Change profile"
+	"change-profile": "Change profile",
+	"update-patch": "Update patches"
 }

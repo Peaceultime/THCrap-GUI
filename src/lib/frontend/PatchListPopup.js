@@ -1,6 +1,7 @@
 const Utils = require("../Utils");
 const Popup = require("./Popup");
 const Repo = require("./Repo");
+const {ipcRenderer} = require("electron");
 
 module.exports = class PatchListPopup extends Popup
 {
@@ -9,7 +10,10 @@ module.exports = class PatchListPopup extends Popup
 	#list = undefined;
 	constructor(list)
 	{
-		super(askTranslation("patch-list-popup"));
+		const button = Utils.nodes.div("popup-header-refresh");
+		button.setAttribute("title", askTranslation("update-patch"));
+		button.addEventListener("click", () => ipcRenderer.send("patch", "update"));
+		super(askTranslation("patch-list-popup"), [button]);
 
 		if(!list)
 			this.#repos = Array.from(Repo.list, e => {e[1].unselect(); return e[1].node});

@@ -11,7 +11,7 @@ const RenamePopup = require("../lib/frontend/RenamePopup");
 const SettingsPopup = require("../lib/frontend/SettingsPopup");
 
 const gameList = new Map();
-let searchButton, downloadPopup, downloadedPatch;
+let searchButton, downloadPopup, downloadedPatch, update;
 
 /**
  * Would be better to release with these components
@@ -83,7 +83,7 @@ function profileBinding(e, request, args)
 }
 function patchBinding(e, request, args)
 {
-	console.log(request, args);
+	console.log(e, request, args);
 	if(request === "update")
 	{
 		for(const fullId in args)
@@ -105,6 +105,18 @@ function patchBinding(e, request, args)
 		downloadedPatch = Patch.get(args.patch);
 		if(args.length !== 0)
 			downloadPopup = new SidePopup(askTranslation("download-patch").replace("%s", downloadedPatch.fullId).replace("%s", args.file), {loading: args.length - 1, translate: false});
+	}
+	else if(request === "patch-update")
+	{
+		if(args === true)
+			update = new SidePopup("update-search", {loading: 1});
+		else if(typeof args === "number")
+		{
+			update.update("", 1);
+			update = new SidePopup("updating-patches", {loading: args - 1});
+		}
+		else
+			update.update("", 1);
 	}
 }
 

@@ -4,6 +4,7 @@ const Utils = require("../Utils");
 const Updater = require("../Updater");
 const Settings = require("./Settings");
 const {ipcMain} = require("electron");
+const App = require("../App");
 
 module.exports = class PatchManager
 {
@@ -43,6 +44,19 @@ module.exports = class PatchManager
 			for(const [fullId, patch] of PatchManager.#patches)
 				obj[fullId] = patch.title;
 			e.reply("patch", "update", obj);
+		}
+		else if(request === "update")
+		{
+			App.send("patch", "patch-update", true);
+			return PatchManager.fetch(Settings.get("first_repo")).then(function() {
+				App.send("patch", "patch-update", PatchManager.#repos.size);
+				return Utils.for(PatchManager.#repos, repo => { return repo.download().then(() => App.send("patch", "patch-update")) });
+			}).then(function() {
+				const obj = {};
+				for(const [fullId, patch] of PatchManager.#patches)
+					obj[fullId] = patch.title;
+				e.reply("patch", "update", obj);
+			});
 		}
 	}
 	static loadRepos()

@@ -930,7 +930,7 @@ html, body
     visibility: hidden;
     transition: opacity .2s ease;
 }
-.setting-button.setting-reload:before
+.setting-button.setting-reload:before, .popup-header-refresh:before
 {
     border: 1px solid var(--white-color);
     border-bottom-color: transparent;
@@ -941,7 +941,7 @@ html, body
     height: 12px;
     border-radius: 50%;
 }
-.setting-button.setting-reload:after
+.setting-button.setting-reload:after, .popup-header-refresh:after
 {
     border: 1px solid var(--white-color);
     border-top-color: transparent;
@@ -956,4 +956,14 @@ html, body
 {
     opacity: 1;
     visibility: visible;
+}
+.popup-header-buttons
+{
+    display: flex;
+}
+.popup-header-refresh
+{
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }

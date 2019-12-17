@@ -4,17 +4,20 @@ module.exports = class Popup
 {
 	#background = null;
 	#wrapper = null;
+	#header = null;
 	#title = null;
 	#close = null;
-	constructor(title)
+	constructor(title, headButtons = [])
 	{
 		this.#title = Utils.nodes.span("popup-title", title);
 		this.#close = Utils.nodes.div("popup-close");
 
 		this.#wrapper = Utils.nodes.div("popup-wrapper");
+		const buttons = Utils.nodes.children(Utils.nodes.div("popup-header-buttons"), [...headButtons, this.#close]);
+		this.#header = Utils.nodes.children(Utils.nodes.div("popup-header"), [this.#title, buttons]);
 
 		this.#background = Utils.nodes.children(Utils.nodes.div("popup-background"), Utils.nodes.children(Utils.nodes.div("popup-foreground"), [
-			Utils.nodes.children(Utils.nodes.div("popup-header"), [this.#title, this.#close]),
+			this.#header,
 			this.#wrapper
 		]));
 	}
