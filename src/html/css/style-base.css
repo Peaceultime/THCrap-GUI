@@ -22,12 +22,12 @@ html, body
 {
     overflow: hidden;
 }
-.game-list::-webkit-scrollbar, .patch-list-content::-webkit-scrollbar, .profile-content::-webkit-scrollbar, .settings-container::-webkit-scrollbar
+.game-list::-webkit-scrollbar, .patch-list-content::-webkit-scrollbar, .profile-content::-webkit-scrollbar, .settings-container::-webkit-scrollbar, .changelog-content::-webkit-scrollbar
 {
     width: 10px;
     border-left: 1px solid var(--white-color);
 }
-.game-list::-webkit-scrollbar-thumb, .patch-list-content::-webkit-scrollbar-thumb, .profile-content::-webkit-scrollbar-thumb, .settings-container::-webkit-scrollbar-thumb
+.game-list::-webkit-scrollbar-thumb, .patch-list-content::-webkit-scrollbar-thumb, .profile-content::-webkit-scrollbar-thumb, .settings-container::-webkit-scrollbar-thumb, .changelog-content::-webkit-scrollbar-thumb
 {
     width: 9px;
     background-color: var(--dark-color);
@@ -966,4 +966,42 @@ html, body
     width: 16px;
     height: 16px;
     cursor: pointer;
+}
+.changelog-content
+{
+    width: 500px;
+    height: 60vh;
+    min-height: 400px;
+    padding: 0 8px;
+    overflow: auto;
+}
+.log-group
+{
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px;
+}
+.log-version
+{
+    font-size: 20px;
+}
+.log-list
+{
+    padding-left: 10px;
+}
+.log
+{
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 1px 0;
+}
+.log:before
+{
+    content: "";
+    width: 6px;
+    height: 6px;
+    margin-right: 4px;
+    border-radius: 4px;
+    background-color: var(--white-color);
 }
