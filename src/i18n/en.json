@@ -50,5 +50,7 @@
 	"change-profile": "Change profile",
 	"update-patch": "Update patches",
 	"launcher-updated": "Launcher updated",
-	"changelog-popup": "Changelog"
+	"changelog-popup": "Changelog",
+	"version": "Version %s",
+	"hotfix": "Hotfix"
 }

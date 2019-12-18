@@ -5,31 +5,20 @@ const {ipcRenderer} = require("electron");
 
 module.exports = class ChangelogPopup extends Popup
 {
-	constructor()
+	constructor(changelog)
 	{
 		super(askTranslation("changelog-popup"));
+	
+		const nodes = [];
+		changelog.reverse();
+		for(const log of changelog)
+		{
+			const version = Utils.nodes.div("log-version", askTranslation("version").replace("%s", log.version) + (log.hotfix ? (" - " + askTranslation("hotfix")) : ""));
+			const list = Utils.nodes.children(Utils.nodes.div("log-list"), log.list.map(e => Utils.nodes.div("log", e)));
+			const node = Utils.nodes.children(Utils.nodes.div("log-group"), [version, list]);
+			nodes.push(node);
+		}
 
-		/*
-		
-		<div class="changelog-content">
-			<div class="log-group log-hotfix">
-				<div class="log-version">Version 1.1.1 - Hotfix</div>
-				<div class="log-list">
-					<div class="log">Fix an Internet connection bug</div>
-				</div>
-			</div>
-			<div class="log-group">
-				<div class="log-version">Version 1.1.0</div>
-				<div class="log-list">
-					<div class="log">Add changelog</div>
-					<div class="log">Add setting to skip patch update furing start</div>
-					<div class="log">Add button in patch list to update patches</div>
-				</div>
-			</div>
-		</div>
-		
-		*/
-
-		this.content = Utils.nodes.children(Utils.nodes.div("changelog-content"), []);
+		this.content = Utils.nodes.children(Utils.nodes.div("changelog-content"), nodes);
 	}
 }

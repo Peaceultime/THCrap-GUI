@@ -50,5 +50,7 @@
 	"change-profile": "Changer de profil",
 	"update-patch": "Mettre à jour les patchs",
 	"launcher-updated": "Launcher mis à jour",
-	"changelog-popup": "Changelog"
+	"changelog-popup": "Changelog",
+	"version": "Version %s",
+	"hotfix": "Correctif"
 }
