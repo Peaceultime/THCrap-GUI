@@ -48,5 +48,7 @@
 	"plural-config-found": "%s configs trouvés :",
 	"patch-list": "Liste des patchs",
 	"change-profile": "Changer de profil",
-	"update-patch": "Mettre à jour les patchs"
+	"update-patch": "Mettre à jour les patchs",
+	"launcher-updated": "Launcher mis à jour",
+	"changelog-popup": "Changelog"
 }

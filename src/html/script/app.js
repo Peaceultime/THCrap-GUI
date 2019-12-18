@@ -9,16 +9,10 @@ const PatchListPopup = require("../lib/frontend/PatchListPopup");
 const ProfilePopup = require("../lib/frontend/ProfilePopup");
 const RenamePopup = require("../lib/frontend/RenamePopup");
 const SettingsPopup = require("../lib/frontend/SettingsPopup");
+const ChangelogPopup = require("../lib/frontend/ChangelogPopup");
 
 const gameList = new Map();
-let searchButton, downloadPopup, downloadedPatch, update;
-
-/**
- * Would be better to release with these components
- * @todo Tutorial [Priority 6]
- * @todo TutorialPopup [Priority 6]
- * @todo Error logging for download and things like that [Priority 2]
- */
+let searchButton, downloadPopup, downloadedPatch, updating;
 
 function profiles()
 {
@@ -108,15 +102,19 @@ function patchBinding(e, request, args)
 	else if(request === "patch-update")
 	{
 		if(args === true)
-			update = new SidePopup("update-search", {loading: 1});
+			updating = new SidePopup("update-search", {loading: 1});
 		else if(typeof args === "number")
 		{
-			update.update("", 1);
-			update = new SidePopup("updating-patches", {loading: args - 1});
+			updating.update("", 1);
+			updating = new SidePopup("updating-patches", {loading: args - 1});
 		}
 		else
-			update.update("", 1);
+			updating.update("", 1);
 	}
+}
+function update(e, changelog)
+{
+	new SidePopup("launcher-updated", {duration: 10000, action: () => new ChangelogPopup(changelog).show() });
 }
 
 window.addEventListener("DOMContentLoaded", function() {
@@ -140,6 +138,7 @@ for(const id in Constants.GAME_DATA)
 ipcRenderer.on("game", gameBinding);
 ipcRenderer.on("patch", patchBinding);
 ipcRenderer.on("profile", profileBinding);
+ipcRenderer.on("update", update);
 
 ipcRenderer.send("profile", "ask");
 ipcRenderer.send("patch", "ask");

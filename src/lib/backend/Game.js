@@ -29,8 +29,11 @@ module.exports = class Game
 					return PatchManager.hashes[sha];
 				});
 		}).then(function(data) {
-			this.#valid = data[0] === id;
-			this.#data = data;
+			if(data)
+			{
+				this.#valid = data[0] === id;
+				this.#data = data;
+			}
 		}.bind(this)).catch(console.error);
 	}
 	change(path)

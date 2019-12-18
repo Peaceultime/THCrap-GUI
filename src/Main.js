@@ -134,6 +134,11 @@ function load()
 				disableHtmlFullscreenWindowResize: true
 			}
 		});
+
+		if(isUpdated)
+			win.once("show", function() {
+				Utils.read("changelog.js").then(changelog => win.send("update", JSON.parse(changelog))).catch(console.error);
+			});
 	}, console.error);
 }
 

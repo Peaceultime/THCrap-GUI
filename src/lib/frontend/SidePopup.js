@@ -125,9 +125,9 @@ module.exports = class SidePopup
 	}
 	clicked(e)
 	{
+		this.fade();
 		if(this.#action)
 			this.#action(e);
-		this.fade();
 	}
 	fade()
 	{
