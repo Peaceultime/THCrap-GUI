@@ -30,6 +30,11 @@ module.exports = class Settings
 	}
 	static get(prop)
 	{
+		if(Settings.#settings[prop] === undefined && Constants.SETTINGS[prop] !== undefined)
+		{
+			Settings.#settings[prop] = Constants.SETTINGS[prop];
+			Settings.save();
+		}
 		return Settings.#settings[prop];
 	}
 	static set(prop, val)

@@ -83,7 +83,6 @@ function profileBinding(e, request, args)
 }
 function patchBinding(e, request, args)
 {
-	console.log(e, request, args);
 	if(request === "update")
 	{
 		for(const fullId in args)
