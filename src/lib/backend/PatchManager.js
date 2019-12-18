@@ -18,8 +18,8 @@ module.exports = class PatchManager
 		//Store every patch and concat every version files from the patches
 		return PatchManager.loadRepos().then(function() {
 			if(Settings.get("update_patch"))
-				return PatchManager.fetch(Settings.get("first_repo")).then(() => Utils.for(PatchManager.#repos, repo => repo.download));
-		}).finally(function() {
+				return PatchManager.fetch(Settings.get("first_repo")).then(() => Utils.for(PatchManager.#repos, repo => repo.download), console.error);
+		}, console.error).finally(function() {
 			for(const [key, repo] of PatchManager.#repos)
 			{
 				for(const [k, patch] of repo.patches)
@@ -105,12 +105,12 @@ module.exports = class PatchManager
 
 		const loop = function(url) {
 			return new Promise(function(res, rej) {
-				dl(url).finally(function() {
+				dl(url).then(function() {
 					if(neighbors.length === 0)
 						res();
 					else
 						loop(neighbors[0]).then(res, rej);
-				});
+				}).catch(rej);
 			})
 		};
 

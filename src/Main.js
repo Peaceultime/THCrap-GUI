@@ -116,7 +116,7 @@ function load()
 	PatchManager.load().then(function() {
 		return Promise.all([GameManager.load(),
 		ProfileManager.load()]);
-	}, () => {}).then(function() {
+	}, console.error).then(function() {
 		ipcMain.removeAllListeners("updater");
 
 		if(Constants.TIMING)
