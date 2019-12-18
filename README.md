@@ -8,6 +8,7 @@ games.
 You can contribute to the development of this software by adding features from the original
 software. This software is fully translatable, you can refer to the `src/i18n/README.md` to get more
 informations about the software translation process.
+To launch the application in dev, you just have to install the dependencies using `npm install` and use `npm start` to start.
 
 ## Tests
 Tests will be add later to the project. The priority tests are the translations tests.
