@@ -143,6 +143,7 @@ async function version(list)
 {
 	const obj = {};
 	const version = JSON.parse(await read("version.js")).version;
+	list.push("changelog.js");
 	for(const file of list)
 		obj[file] = await sha(file);
 
