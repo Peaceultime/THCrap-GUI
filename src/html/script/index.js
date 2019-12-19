@@ -1,7 +1,10 @@
 "use strict";
 const {STATE} = require("../lib/Constants");
 
-let text, loader, loadingbar, loadingMax, loadingState, buttonRetry, buttonOffline, state;
+let text, buttonRetry, buttonOffline, state;
+
+let mainLoader, mainLoadingbar, mainLoadingMax, mainLoadingState;
+let secondaryLoader, secondaryLoadingbar, secondaryLoadingMax, secondaryLoadingState, secondaryDisplayed;
 
 function retry()
 {
@@ -19,45 +22,66 @@ function compute(e, s, arg, tr)
 	{
 		case STATE.SEARCHING:
 			text.textContent = askTranslation("update-search");
-			loader.classList.add("no-load");
-			loader.style.display = "";
+			mainLoader.classList.add("no-load");
+			mainLoader.style.display = "";
+			secondaryLoader.style.display = "none";
 			buttonRetry.style.display = "";
 			buttonOffline.style.display = "";
+			secondaryDisplayed = false;
 			break;
 
 		case STATE.UPDATING_START:
 			text.textContent = askTranslation(tr);
-			loader.classList.remove("no-load");
-			loadingbar.style.width = "";
-			loadingMax = arg;
-			loadingState = 0;
+			if(state === STATE.UPDATING_START)
+			{
+				secondaryLoader.style.display = "";
+				secondaryLoadingbar.style.width = "";
+				secondaryLoadingMax = mainLoadingMax;
+				mainLoadingMax = arg;
+				secondaryLoadingState = 0;
+				secondaryDisplayed = true;
+			}
+			else
+			{
+				mainLoader.classList.remove("no-load");
+				mainLoadingbar.style.width = "";
+				mainLoadingMax = arg;
+				mainLoadingState = 0;
+			}
 			break;
 
 		case STATE.UPDATING:
-			loadingState++;
-			console.log((loadingState / loadingMax * 100));
-			loadingbar.style.width = (loadingState / loadingMax * 100) + "%";
+			mainLoadingState++;
+			mainLoadingbar.style.width = (mainLoadingState / mainLoadingMax * 100) + "%";
+			if(secondaryDisplayed && mainLoadingState === mainLoadingMax)
+			{
+				secondaryLoadingState++;
+				secondaryLoadingbar.style.width = (secondaryLoadingState / secondaryLoadingMax * 100) + "%";
+			}
 			break;
 
 		case STATE.LOADING:
 			text.textContent = askTranslation("loading");
-			loadingbar.style.width = "";
-			loader.classList.add("no-load");
+			mainLoadingbar.style.width = "";
+			mainLoader.classList.add("no-load");
+			secondaryDisplayed = false;
 			break;
 
 		case STATE.NOCONNECTION:
 			text.textContent = askTranslation("no-connection");
-			loader.style.display = "none";
+			mainLoader.style.display = "none";
 			buttonRetry.style.display = "block";
 			buttonOffline.style.display = "block";
+			secondaryDisplayed = false;
 			break;
 
 		case STATE.ERROR:
 		default:
 			text.textContent = askTranslation("error-updating");
 			text.classList.add("error");
-			loader.style.display = "none";
+			mainLoader.style.display = "none";
 			buttonRetry.style.display = "block";
+			secondaryDisplayed = false;
 			break;
 	}
 	state = s;
@@ -65,8 +89,10 @@ function compute(e, s, arg, tr)
 
 window.addEventListener("DOMContentLoaded", function() {
 	text = document.getElementById("task-description");
-	loader = document.getElementById("loading");
-	loadingbar = loader.children[0];
+	mainLoader = document.querySelector(".main-loading");
+	mainLoadingbar = mainLoader.children[0];
+	secondaryLoader = document.querySelector(".secondary-loading");
+	secondaryLoadingbar = secondaryLoader.children[0];
 
 	buttonRetry = document.querySelector(".retry");
 	buttonOffline = document.querySelector(".offline");
