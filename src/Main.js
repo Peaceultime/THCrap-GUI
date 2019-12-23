@@ -116,7 +116,7 @@ function load()
 	PatchManager.load().then(function() {
 		return Promise.all([GameManager.load(),
 		ProfileManager.load()]);
-	}, () => {}).then(function() {
+	}, console.error).then(function() {
 		ipcMain.removeAllListeners("updater");
 
 		if(Constants.TIMING)
@@ -134,6 +134,11 @@ function load()
 				disableHtmlFullscreenWindowResize: true
 			}
 		});
+
+		if(isUpdated)
+			win.once("show", function() {
+				Utils.read("changelog.js").then(changelog => win.send("update", JSON.parse(changelog))).catch(console.error);
+			});
 	}, console.error);
 }
 

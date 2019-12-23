@@ -227,8 +227,7 @@ exports.request = function(url, method)
 				this.abort();
 				rej();
 			}).on("error", function(e) {
-				if(e.code === "EACCES")
-					exports.updateConnection(false, e);
+				exports.updateConnection(false, e);
 				rej(e);
 			}).end();
 		}
@@ -248,8 +247,7 @@ exports.request = function(url, method)
 				this.abort();
 				rej();
 			}).on("error", function(e) {
-				if(e.code === "EACCES")
-					exports.updateConnection(false, e);
+				exports.updateConnection(false, e);
 				rej(e);
 			}).end();
 		}

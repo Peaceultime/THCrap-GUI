@@ -11,6 +11,7 @@ module.exports = class SidePopup
 	#error = false;
 	#deleted = false;
 	#translate = true;
+	#action = null;
 	static #max = 5;
 	static #popups = [];
 	static #popupContainer = null;
@@ -53,9 +54,10 @@ module.exports = class SidePopup
 			this.#duration = opts.duration || 5000;
 		this.#error = opts.error;
 		this.#translate = opts.translate !== undefined ? opts.translate : true;
+		this.#action = opts.action;
 
 		this.#node = document.createElement("div");
-		this.#node.addEventListener("click", this.fade.bind(this));
+		this.#node.addEventListener("click", this.clicked.bind(this));
 		this.#node.classList.add("side-popup");
 		if(this.#error)
 			this.#node.classList.add("side-error");
@@ -120,6 +122,12 @@ module.exports = class SidePopup
 		this.#time = time;
 
 		this.#loadingNode.style.width = (this.#progression < this.#duration ? (this.#progression / this.#duration * 100) + "%" : "100%");
+	}
+	clicked(e)
+	{
+		this.fade();
+		if(this.#action)
+			this.#action(e);
 	}
 	fade()
 	{
