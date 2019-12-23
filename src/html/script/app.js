@@ -10,6 +10,7 @@ const ProfilePopup = require("../lib/frontend/ProfilePopup");
 const RenamePopup = require("../lib/frontend/RenamePopup");
 const SettingsPopup = require("../lib/frontend/SettingsPopup");
 const ChangelogPopup = require("../lib/frontend/ChangelogPopup");
+const TutorialPopup = require("../lib/frontend/TutorialPopup");
 
 const gameList = new Map();
 let searchButton, downloadPopup, downloadedPatch, updating;

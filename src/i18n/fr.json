@@ -52,5 +52,7 @@
 	"launcher-updated": "Launcher mis à jour",
 	"changelog-popup": "Changelog",
 	"version": "Version %s",
-	"hotfix": "Correctif"
+	"hotfix": "Correctif",
+	"skip-tutorial": "Passer",
+	"next-tutorial": "Suivant"
 }

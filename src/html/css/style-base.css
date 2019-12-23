@@ -1005,3 +1005,140 @@ html, body
     border-radius: 4px;
     background-color: var(--white-color);
 }
+.tutorial-popup
+{
+    padding: 4px 6px;
+    max-width: 300px;
+    position: absolute;
+    padding-bottom: 30px;
+}
+.tutorial-buttons
+{
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+.tutorial-skip, .tutorial-next
+{
+    border: 1px solid var(--white-color);
+    border-right: none;
+    border-bottom: none;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+.tutorial-skip:hover, .tutorial-next:hover
+{
+    background-color: var(--dark-color);
+}
+.tutorial-arrow
+{
+    position: fixed;
+    background-color: var(--white-color);
+}
+.tutorial-arrow:before
+{
+    content: "";
+    border-left: 2px solid var(--white-color);
+    border-top: 2px solid var(--white-color);
+    width: 6px;
+    height: 6px;
+    position: absolute;
+}
+@keyframes highlight-arrow-left
+{
+    from {
+        transform: translate(0px, 0px);
+    }
+    50% {
+        transform: translate(5px, 0px);
+    }
+    to {
+        transform: translate(0px, 0px);
+    }
+}
+@keyframes highlight-arrow-right
+{
+    from {
+        transform: translate(0px, 0px);
+    }
+    50% {
+        transform: translate(-5px, 0px);
+    }
+    to {
+        transform: translate(0px, 0px);
+    }
+}
+@keyframes highlight-arrow-top
+{
+    from {
+        transform: translate(0px, 0px);
+    }
+    50% {
+        transform: translate(0px, -5px);
+    }
+    to {
+        transform: translate(0px, 0px);
+    }
+}
+@keyframes highlight-arrow-bottom
+{
+    from {
+        transform: translate(0px, 0px);
+    }
+    50% {
+        transform: translate(0px, 5px);
+    }
+    to {
+        transform: translate(0px, 0px);
+    }
+}
+.arrow-left
+{
+    animation: highlight-arrow-left 2s ease infinite;
+    width: 24px;
+    height: 2px;
+}
+.arrow-right
+{
+    animation: highlight-arrow-right 2s ease infinite;
+    width: 24px;
+    height: 2px;
+}
+.arrow-top
+{
+    animation: highlight-arrow-top 2s ease infinite;
+    height: 24px;
+    width: 2px;
+
+}
+.arrow-bottom
+{
+    animation: highlight-arrow-bottom 2s ease infinite;
+    height: 24px;
+    width: 2px;
+}
+.tutorial-arrow.arrow-left:before
+{
+    transform: rotate(-45deg);
+    left: 0;
+    top: -3px;
+}
+.tutorial-arrow.arrow-right:before
+{
+    transform: rotate(135deg);
+    right: 0;
+    top: -3px;
+}
+.tutorial-arrow.arrow-top:before
+{
+    transform: rotate(45deg);
+    top: 0;
+    left: -3px;
+}
+.tutorial-arrow.arrow-bottom:before
+{
+    transform: rotate(-135deg);
+    bottom: 0;
+    left: -3px;
+}
