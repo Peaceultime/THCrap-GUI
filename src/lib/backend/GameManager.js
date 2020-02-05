@@ -61,7 +61,8 @@ const GameManager = module.exports = class GameManager
 				{
 					const arr = [];
 					for(const game of group)
-						arr.push([game.path, ...game.data]);
+						if(game.valid)
+							arr.push([game.path, ...game.data]);
 					e.returnValue = {default: GameManager.#default.get(args), games: arr};
 				}
 				else
